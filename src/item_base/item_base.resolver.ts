@@ -1,11 +1,21 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  Int,
+  ResolveProperty,
+  Parent,
+  Context,
+} from '@nestjs/graphql';
 import { ItemBaseService } from './item_base.service';
 import { ItemBaseEntity } from './item_base.entity';
 import { CreateItemBaseInput } from './dto/create-item_base.input';
 import { UpdateItemBaseInput } from './dto/update-item_base.input';
 import { DataSource } from 'typeorm';
 import { ListItemBaseOptionsInput } from './dto/list-item-base-options.input';
-import { ObjectFunctions } from 'src/common/functions/object-functions.class';
+import { TipoItemBaseEntity } from 'src/tipo_item_base/tipo_item_base.entity';
+import { TibLoader } from 'src/tipo_item_base/tipo_item_base.loader';
 
 @Resolver(() => ItemBaseEntity)
 export class ItemBaseResolver {
@@ -23,7 +33,7 @@ export class ItemBaseResolver {
   }
 
   @Query(() => [ItemBaseEntity], { name: 'itemBases' })
-  findAll(
+  async findAll(
     @Args({
       name: 'options',
       type: () => ListItemBaseOptionsInput,
@@ -31,7 +41,7 @@ export class ItemBaseResolver {
     })
     options?: ListItemBaseOptionsInput,
   ) {
-    return this.itemBaseService.findAll(options);
+    return await this.itemBaseService.findAll(options);
   }
 
   @Query(() => ItemBaseEntity, { name: 'itemBase' })
@@ -52,5 +62,13 @@ export class ItemBaseResolver {
   @Mutation(() => ItemBaseEntity)
   removeItemBase(@Args('id', { type: () => Int }) id: number) {
     return this.itemBaseService.remove(id);
+  }
+
+  @ResolveProperty('tipoItemBase', () => TipoItemBaseEntity)
+  async getTiposBase(
+    @Parent() ib: ItemBaseEntity,
+    @Context('tibLoader') tibLoader: TibLoader,
+  ) {
+    return await tibLoader.load(ib.tipoItemBaseId);
   }
 }

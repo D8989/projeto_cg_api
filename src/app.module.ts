@@ -8,13 +8,23 @@ import { AppResolver } from './app.resolver';
 import { ConfigModule } from './config/config.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from './config/config.service';
+import { createTipoItemBaseLoader } from './tipo_item_base/tipo_item_base.loader';
+import { TipoItemBaseService } from './tipo_item_base/tipo_item_base.service';
+import { TipoItemBaseModule } from './tipo_item_base/tipo_item_base.module';
 
 @Module({
   imports: [
-    GraphQLModule.forRoot<ApolloDriverConfig>({
+    GraphQLModule.forRootAsync<ApolloDriverConfig>({
+      imports: [TipoItemBaseModule],
       driver: ApolloDriver,
-      playground: true,
-      autoSchemaFile: 'schema.gql',
+      useFactory: (tibService: TipoItemBaseService) => ({
+        playground: true,
+        autoSchemaFile: 'schema.gql',
+        context: () => ({
+          tibLoader: createTipoItemBaseLoader(tibService),
+        }),
+      }),
+      inject: [TipoItemBaseService],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

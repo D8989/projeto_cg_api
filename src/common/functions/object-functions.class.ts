@@ -20,4 +20,20 @@ export class ObjectFunctions {
     }
     return obj;
   }
+
+  static groupByKey<T>(arr: T[], prop: string) {
+    return arr.reduce((previous, current) => {
+      previous[current[prop]] = previous[current[prop]] || {};
+      previous[current[prop]] = current;
+      return previous;
+    }, {});
+  }
+
+  static groupByKeyMany<T>(arr: T[], prop: string) {
+    return arr.reduce((previous, current) => {
+      previous[current[prop]] = previous[current[prop]] || [];
+      previous[current[prop]].push(current);
+      return previous;
+    }, {});
+  }
 }

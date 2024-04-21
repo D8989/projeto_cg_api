@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { CreateTipoItemBaseInput } from './dto/create-tipo_item_base.input';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { TipoItemBaseEntity } from './tipo_item_base.entity';
 import { TipoItemBaseDto } from './dto/tipo-item-base.dto';
 import { StringFunctionsClass } from 'src/common/functions/string-functions.class';
@@ -170,5 +170,14 @@ export class TipoItemBaseService {
               : { flag: false, message: `Tipo do item não existe` },
           ),
       );
+  }
+
+  async findByIds(ids: number[]): Promise<TipoItemBaseEntity[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    return this.tipoItemBaseRepository.find({
+      where: { id: In(ids) },
+    });
   }
 }
