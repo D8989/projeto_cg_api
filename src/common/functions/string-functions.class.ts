@@ -5,4 +5,8 @@ export class StringFunctionsClass {
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase();
   }
+
+  static firstLetterUppercase(str: string): string {
+    return str.charAt(0).toUpperCase() + str.toLowerCase().slice(1);
+  }
 }

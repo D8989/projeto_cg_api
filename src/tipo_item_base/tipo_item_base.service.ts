@@ -4,12 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateTipoItemBaseInput } from './dto/create-tipo_item_base.input';
-import { UpdateTipoItemBaseInput } from './dto/update-tipo_item_base.input';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TipoItemBaseEntity } from './tipo_item_base.entity';
 import { TipoItemBaseDto } from './dto/tipo-item-base.dto';
 import { StringFunctionsClass } from 'src/common/functions/string-functions.class';
+import { ObjectFunctions } from 'src/common/functions/object-functions.class';
+import { RespBollClass } from 'src/common/classes/resp-boll.class';
 
 @Injectable()
 export class TipoItemBaseService {
@@ -64,6 +65,13 @@ export class TipoItemBaseService {
   }
 
   async update(id: number, dto: TipoItemBaseDto) {
+    dto = ObjectFunctions.removeEmptyProperties(dto);
+    if (ObjectFunctions.isObjectEmpty(dto)) {
+      throw new BadRequestException(
+        'Não foi informado algum dado para a alteração do tipo item-base',
+      );
+    }
+
     const tipo = await this.findOne(id);
     if (!tipo) {
       throw new NotFoundException('Tipo não encontrado para edição');
@@ -74,8 +82,10 @@ export class TipoItemBaseService {
       throw new BadRequestException(check.message);
     }
 
-    tipo.nome = dto.nome;
-    tipo.nomeUnique = StringFunctionsClass.toLowerUnaccent(dto.nome);
+    if (dto.nome) {
+      tipo.nome = dto.nome;
+      tipo.nomeUnique = StringFunctionsClass.toLowerUnaccent(dto.nome);
+    }
     tipo.descricao = dto.descricao || 'n/a';
 
     return await this.tipoItemBaseRepository.save(tipo);
@@ -144,5 +154,21 @@ export class TipoItemBaseService {
               message: `Nome "${nome}" pode ser utilizado(${type})`,
             };
       });
+  }
+
+  async exist(id: number): Promise<RespBollClass> {
+    return await this.tipoItemBaseRepository
+      .findOne({
+        select: ['id', 'nome'],
+        where: { id },
+      })
+      .then(
+        (resp) =>
+          new RespBollClass(
+            resp
+              ? { flag: true, message: `Tipo "${resp.nome}" existe` }
+              : { flag: false, message: `Tipo do item não existe` },
+          ),
+      );
   }
 }

@@ -7,5 +7,6 @@ import { TipoItemBaseEntity } from './tipo_item_base.entity';
 @Module({
   imports: [TypeOrmModule.forFeature([TipoItemBaseEntity]), TipoItemBaseModule],
   providers: [TipoItemBaseResolver, TipoItemBaseService],
+  exports: [TipoItemBaseService],
 })
 export class TipoItemBaseModule {}

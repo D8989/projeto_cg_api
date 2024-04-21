@@ -5,7 +5,7 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import { ConfigService } from './config/config.service';
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const logger = new Logger('MAIN');
@@ -13,6 +13,8 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter({ logger: false }),
   );
+  app.enableCors();
+  app.useGlobalPipes(new ValidationPipe());
   const configService = app.get(ConfigService);
 
   const port = configService.get('PORT');
