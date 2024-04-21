@@ -4,6 +4,8 @@ import { ItemBaseEntity } from './item_base.entity';
 import { CreateItemBaseInput } from './dto/create-item_base.input';
 import { UpdateItemBaseInput } from './dto/update-item_base.input';
 import { DataSource } from 'typeorm';
+import { ListItemBaseOptionsInput } from './dto/list-item-base-options.input';
+import { ObjectFunctions } from 'src/common/functions/object-functions.class';
 
 @Resolver(() => ItemBaseEntity)
 export class ItemBaseResolver {
@@ -20,9 +22,16 @@ export class ItemBaseResolver {
     return this.itemBaseService.create(createItemBaseInput);
   }
 
-  @Query(() => [ItemBaseEntity], { name: 'itemBase' })
-  findAll() {
-    return this.itemBaseService.findAll();
+  @Query(() => [ItemBaseEntity], { name: 'itemBases' })
+  findAll(
+    @Args({
+      name: 'options',
+      type: () => ListItemBaseOptionsInput,
+      nullable: true,
+    })
+    options?: ListItemBaseOptionsInput,
+  ) {
+    return this.itemBaseService.findAll(options);
   }
 
   @Query(() => ItemBaseEntity, { name: 'itemBase' })

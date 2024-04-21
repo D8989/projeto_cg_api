@@ -1,10 +1,12 @@
 export class ObjectFunctions {
-  static isObjectEmpty<T>(obj: T): boolean {
-    if (Object.keys(obj).length === 0) {
-      return true;
-    }
-    if (Object.values(obj).every((x) => x === null || x === undefined)) {
-      return true;
+  static isObjectEmpty(obj: any): boolean {
+    if (typeof obj === 'object') {
+      if (Object.keys(obj).length === 0) {
+        return true;
+      }
+      if (Object.values(obj).every((x) => x === null || x === undefined)) {
+        return true;
+      }
     }
 
     return false;

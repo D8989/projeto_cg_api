@@ -3,11 +3,13 @@ import { CreateItemBaseInput } from './dto/create-item_base.input';
 import { UpdateItemBaseInput } from './dto/update-item_base.input';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ItemBaseEntity } from './item_base.entity';
-import { Repository } from 'typeorm';
+import { Brackets, ILike, In, Repository } from 'typeorm';
 import { TipoItemBaseService } from 'src/tipo_item_base/tipo_item_base.service';
 import { StringFunctionsClass } from 'src/common/functions/string-functions.class';
 import { ItemBaseDto } from './dto/item-base.dto';
 import { RespBollClass } from 'src/common/classes/resp-boll.class';
+import { ListItemBaseOptionsInput } from './dto/list-item-base-options.input';
+import { ObjectFunctions } from 'src/common/functions/object-functions.class';
 
 @Injectable()
 export class ItemBaseService {
@@ -41,8 +43,40 @@ export class ItemBaseService {
     return await this.itemBaseRepo.save(item);
   }
 
-  findAll() {
-    return `This action returns all itemBase`;
+  async findAll(opt?: ListItemBaseOptionsInput) {
+    const query = this.itemBaseRepo.createQueryBuilder('ib');
+
+    if (opt && !ObjectFunctions.isObjectEmpty(opt)) {
+      if (opt.buscaSimples && opt.buscaSimples.length) {
+        query.innerJoin(`${query.alias}.tipoItemBase`, 'tib');
+        query.where(
+          new Brackets((qbW) => {
+            qbW
+              .where(`${query.alias}.nomeUnique ILIKE UNACCENT(LOWER(:busca))`)
+              .orWhere(`tib.nome ILIKE :busca`, {
+                busca: `%${opt.buscaSimples}%`,
+              });
+          }),
+        );
+      } else {
+        query.where('1=1');
+        if (opt.nome && opt.nome.length > 0) {
+          query.andWhere(
+            `${query.alias}.nomeUnique ILIKE UNACCENT(LOWER(:nome))`,
+            { nome: `%${opt.nome}%` },
+          );
+        }
+        if (opt.tipoItemBaseIds && opt.tipoItemBaseIds.length > 0) {
+          query.andWhere(`${query.alias}.tipoItemBaseId IN(:...tibIds)`, {
+            tibIds: opt.tipoItemBaseIds,
+          });
+        }
+      }
+    }
+
+    query.orderBy(`${query.alias}.nomeUnique`, 'ASC');
+
+    return await query.getMany();
   }
 
   findOne(id: number) {
@@ -76,18 +110,16 @@ export class ItemBaseService {
       query.andWhere('ib.id <> :ibId', { ibId: ignoredId });
     }
 
-    return await query
-      .getOne()
-      .then(
-        (resp) =>
-          new RespBollClass(
-            resp
-              ? {
-                  flag: false,
-                  message: `Já existe um item-base com o nome "${nome}" no sistema`,
-                }
-              : { flag: true, message: `Nome "${nome}" pode ser usado` },
-          ),
-      );
+    return await query.getOne().then(
+      (resp) =>
+        new RespBollClass(
+          resp
+            ? {
+                flag: false,
+                message: `Já existe um item-base com o nome "${nome}" no sistema`,
+              }
+            : { flag: true, message: `Nome "${nome}" pode ser usado` },
+        ),
+    );
   }
 }
