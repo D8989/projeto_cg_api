@@ -79,8 +79,10 @@ export class ItemBaseService {
     return await query.getMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} itemBase`;
+  async findOne(id: number) {
+    return await this.itemBaseRepo.findOne({
+      where: { id },
+    });
   }
 
   update(id: number, updateItemBaseInput: UpdateItemBaseInput) {
