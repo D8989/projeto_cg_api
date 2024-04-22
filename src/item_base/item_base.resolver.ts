@@ -51,13 +51,11 @@ export class ItemBaseResolver {
   }
 
   @Mutation(() => ItemBaseEntity)
-  updateItemBase(
+  async updateItemBase(
     @Args('updateItemBaseInput') updateItemBaseInput: UpdateItemBaseInput,
   ) {
-    return this.itemBaseService.update(
-      updateItemBaseInput.id,
-      updateItemBaseInput,
-    );
+    const { id, ...dto } = updateItemBaseInput;
+    return await this.itemBaseService.update(id, dto);
   }
 
   @Mutation(() => RespMessageClass)

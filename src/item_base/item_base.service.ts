@@ -99,8 +99,42 @@ export class ItemBaseService {
       });
   }
 
-  update(id: number, updateItemBaseInput: UpdateItemBaseInput) {
-    return `This action updates a #${id} itemBase`;
+  async update(id: number, dto: ItemBaseDto) {
+    const item = await this.findOne(id);
+    if (!item) {
+      throw new BadRequestException('Item não encontarado para remoção');
+    }
+
+    const itemDto = ObjectFunctions.removeEmptyProperties(dto);
+    if (ObjectFunctions.isObjectEmpty(itemDto)) {
+      throw new BadRequestException('Não foi informado dados para alteração');
+    }
+
+    await Promise.all([
+      this.checkDuplicada(dto, item.id),
+      itemDto.tipoItemBaseId
+        ? this.tipoItemBaseService.exist(itemDto.tipoItemBaseId)
+        : { flag: true, message: '' },
+    ]).then((resps) => {
+      for (const resp of resps) {
+        if (!resp.flag) {
+          throw new BadRequestException(resp.message);
+        }
+      }
+    });
+
+    if (dto.nome) {
+      item.nome = dto.nome;
+      item.nomeUnique = StringFunctionsClass.toLowerUnaccent(dto.nome);
+    }
+    if (dto.tipoItemBaseId) {
+      item.tipoItemBaseId = dto.tipoItemBaseId;
+    }
+    item.descricao = dto.descricao || 'n/a';
+
+    await this.itemBaseRepo.save(item);
+
+    return item;
   }
 
   async remove(id: number) {

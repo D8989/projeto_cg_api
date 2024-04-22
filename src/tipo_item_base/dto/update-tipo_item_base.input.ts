@@ -3,9 +3,7 @@ import { CreateTipoItemBaseInput } from './create-tipo_item_base.input';
 import { InputType, Field, Int, PartialType } from '@nestjs/graphql';
 
 @InputType()
-export class UpdateTipoItemBaseInput extends PartialType(
-  CreateTipoItemBaseInput,
-) {
+export class UpdateTipoItemBaseInput {
   @Field(() => Int)
   @IsInt()
   id: number;
