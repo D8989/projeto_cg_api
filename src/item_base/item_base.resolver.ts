@@ -45,8 +45,8 @@ export class ItemBaseResolver {
   }
 
   @Query(() => ItemBaseEntity, { name: 'itemBase' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.itemBaseService.findOne(id);
+  async findOne(@Args('id', { type: () => Int }) id: number) {
+    return await this.itemBaseService.fetchOne(id);
   }
 
   @Mutation(() => ItemBaseEntity)

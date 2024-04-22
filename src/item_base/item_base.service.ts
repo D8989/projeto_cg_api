@@ -85,6 +85,19 @@ export class ItemBaseService {
     });
   }
 
+  async fetchOne(id: number) {
+    return await this.itemBaseRepo
+      .findOne({
+        where: { id },
+      })
+      .then((resp) => {
+        if (!resp) {
+          throw new BadRequestException('Item-base não encontrado');
+        }
+        return resp;
+    });
+  }
+
   update(id: number, updateItemBaseInput: UpdateItemBaseInput) {
     return `This action updates a #${id} itemBase`;
   }
