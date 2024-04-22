@@ -10,6 +10,7 @@ import { ItemBaseDto } from './dto/item-base.dto';
 import { RespBollClass } from 'src/common/classes/resp-boll.class';
 import { ListItemBaseOptionsInput } from './dto/list-item-base-options.input';
 import { ObjectFunctions } from 'src/common/functions/object-functions.class';
+import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class ItemBaseService {
@@ -95,15 +96,21 @@ export class ItemBaseService {
           throw new BadRequestException('Item-base não encontrado');
         }
         return resp;
-    });
+      });
   }
 
   update(id: number, updateItemBaseInput: UpdateItemBaseInput) {
     return `This action updates a #${id} itemBase`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} itemBase`;
+  async remove(id: number) {
+    const item = await this.findOne(id);
+    if (!item) {
+      throw new BadRequestException('item-base não encontrado para remoção');
+    }
+
+    await this.itemBaseRepo.delete({ id });
+    return item;
   }
 
   async checkDuplicada(

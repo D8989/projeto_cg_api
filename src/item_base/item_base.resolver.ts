@@ -16,6 +16,7 @@ import { DataSource } from 'typeorm';
 import { ListItemBaseOptionsInput } from './dto/list-item-base-options.input';
 import { TipoItemBaseEntity } from 'src/tipo_item_base/tipo_item_base.entity';
 import { TibLoader } from 'src/tipo_item_base/tipo_item_base.loader';
+import { RespMessageClass } from 'src/common/classes/resp-message.class';
 
 @Resolver(() => ItemBaseEntity)
 export class ItemBaseResolver {
@@ -59,9 +60,12 @@ export class ItemBaseResolver {
     );
   }
 
-  @Mutation(() => ItemBaseEntity)
-  removeItemBase(@Args('id', { type: () => Int }) id: number) {
-    return this.itemBaseService.remove(id);
+  @Mutation(() => RespMessageClass)
+  async removeItemBase(@Args('id', { type: () => Int }) id: number) {
+    const item = await this.itemBaseService.remove(id);
+    return new RespMessageClass({
+      message: `Item base "${item.nome}" foi apagado com sucesso`,
+    });
   }
 
   @ResolveProperty('tipoItemBase', () => TipoItemBaseEntity)
