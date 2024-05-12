@@ -10,4 +10,5 @@ export interface IFindOpt {
   offset?: number;
   ordenarPor?: string;
   ordem?: 'ASC' | 'DESC';
+  buscaSimples?: string;
 }
