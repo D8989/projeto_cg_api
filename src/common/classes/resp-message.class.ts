@@ -1,7 +1,13 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
 export class RespMessageClass {
+  @Field(() => Int, {
+    nullable: true,
+    description: 'Identificador da entidade em questão',
+  })
+  id?: number;
+
   @Field(() => String)
   message: string;
 
