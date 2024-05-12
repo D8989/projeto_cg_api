@@ -5,6 +5,8 @@ import { CreateMarcaInput } from './dto/create-marca.input';
 import { DataSource } from 'typeorm';
 import { ListMarcaDto } from './dto/list-marca.dto';
 import { ListMarcaOptionsDto } from './dto/list-marca-options.dto';
+import { DeactivateMarcaInput } from './dto/deactivate-marca.input';
+import { RespMessageClass } from 'src/common/classes/resp-message.class';
 
 @Resolver(() => MarcaEntity)
 export class MarcaResolver {
@@ -35,5 +37,23 @@ export class MarcaResolver {
       .then((resp) => {
         return new ListMarcaDto(resp);
       });
+  }
+
+  @Mutation(() => RespMessageClass, { name: 'softDeleteMarca' })
+  async deactivateMarca(
+    @Args({ name: 'deactivateDto', type: () => DeactivateMarcaInput })
+    deactivateDto: DeactivateMarcaInput,
+  ) {
+    try {
+      const marcaDeleted = await this.marcaService.softDeleteMarca(
+        deactivateDto,
+      );
+      return new RespMessageClass({
+        id: marcaDeleted.id,
+        message: `Marca "${marcaDeleted.nome}" desativada com sucesso!`,
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 }

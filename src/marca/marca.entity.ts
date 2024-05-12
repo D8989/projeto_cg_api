@@ -20,6 +20,15 @@ export class MarcaEntity {
   @Field(() => String, { nullable: true })
   descricao?: string;
 
+  @Column('timestamptz', { name: 'criado_em' })
+  criadoEm: Date;
+
+  @Column({ name: 'atualizado_em', nullable: true })
+  atualizadoEm?: Date;
+
+  @Column('timestamptz', { name: 'desativado_em', nullable: true })
+  desativadoEm?: Date;
+
   constructor(partial: Partial<MarcaEntity>) {
     Object.assign(this, partial);
   }

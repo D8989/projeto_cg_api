@@ -6,6 +6,7 @@ import { IOptMarca } from './interface/opt-marca.interface';
 import { MarcaEntity } from './marca.entity';
 import { StringFunctionsClass } from 'src/common/functions/string-functions.class';
 import { ListMarcaOptionsDto } from './dto/list-marca-options.dto';
+import { DeactivateMarcaInput } from './dto/deactivate-marca.input';
 
 @Injectable()
 export class MarcaService {
@@ -35,6 +36,22 @@ export class MarcaService {
       opt.limite = 100;
     }
     return await this.marcaRepo.findAllAndCount(opt.toIFindMarca());
+  }
+
+  async softDeleteMarca(opt: DeactivateMarcaInput) {
+    const { id } = opt;
+    const marca = await this.marcaRepo.findOne({
+      select: ['id', 'nome'],
+      ids: [id],
+    });
+    if (!marca) {
+      throw new NotFoundException('Marca não encontrada para a desaivação');
+    }
+    const now = new Date();
+    marca.desativadoEm = now;
+    marca.atualizadoEm = now;
+
+    return await this.marcaRepo.save(marca);
   }
 
   private async isDuplicada(

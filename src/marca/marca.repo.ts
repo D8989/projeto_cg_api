@@ -2,11 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MarcaEntity } from './marca.entity';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
-import { CreateMarcaInput } from './dto/create-marca.input';
-import { IUniqMarca } from './interface/uniq-marca.interface';
 import { IOptMarca } from './interface/opt-marca.interface';
-import { ArrayFunctions } from 'src/common/functions/array-functions.class';
-import { StringFunctionsClass } from 'src/common/functions/string-functions.class';
 import { RepoFunctions } from 'src/common/functions/repo-functions.class';
 
 // Arquivo na verdade funciona como um service que faz as chamadas mais simples para o BD
@@ -23,8 +19,6 @@ export class MarcaRepo {
     this.buildWhere(query, opt);
 
     return await query.getOne().then((resp) => {
-      console.log('TRDP: ', resp);
-
       return resp;
     });
   }
@@ -60,10 +54,10 @@ export class MarcaRepo {
   private buildWhere(qb: SelectQueryBuilder<MarcaEntity>, opt: IOptMarca) {
     const { ids, nome, nomeUnique, descricao, ignoredId } = opt;
     const alias = qb.alias;
-    qb.where('1=1'); // forçar começar com .where
+    qb.where(`${alias}.desativadoEm IS NULL`);
 
     if (ids && ids.length > 0) {
-      qb.andWhere(`${alias}.ids IN (:...ids)`, { ids });
+      qb.andWhere(`${alias}.id IN (:...ids)`, { ids });
     }
 
     if (ignoredId) {
