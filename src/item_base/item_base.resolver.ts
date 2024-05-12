@@ -42,7 +42,9 @@ export class ItemBaseResolver {
     })
     options?: ListItemBaseOptionsInput,
   ) {
-    return await this.itemBaseService.findAll(options);
+    return await this.itemBaseService.findAll(
+      new ListItemBaseOptionsInput(options),
+    );
   }
 
   @Query(() => ItemBaseEntity, { name: 'itemBase' })

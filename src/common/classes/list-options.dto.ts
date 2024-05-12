@@ -25,10 +25,16 @@ export class ListOptionsDto implements IFindOpt {
   @IsOptional()
   ordem?: 'ASC' | 'DESC';
 
+  @Field(() => String, { nullable: true })
+  @IsString()
+  @IsOptional()
+  buscaSimples?: string;
+
   constructor(partial?: Partial<ListOptionsDto>) {
     this.limite = partial?.limite;
     this.offset = partial?.offset;
     this.ordenarPor = partial?.ordenarPor;
     this.ordem = partial?.ordem;
+    this.buscaSimples = partial?.buscaSimples;
   }
 }
