@@ -1,4 +1,4 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { MarcaService } from './marca.service';
 import { MarcaEntity } from './marca.entity';
 import { CreateMarcaInput } from './dto/create-marca.input';
@@ -52,6 +52,18 @@ export class MarcaResolver {
         id: marcaDeleted.id,
         message: `Marca "${marcaDeleted.nome}" desativada com sucesso!`,
       });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Query(() => MarcaEntity, { name: 'marca' })
+  async viewMarca(
+    @Args({ name: 'id', type: () => Int })
+    id: number,
+  ) {
+    try {
+      return await this.marcaService.getMarca(id);
     } catch (error) {
       throw error;
     }

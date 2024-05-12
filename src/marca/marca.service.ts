@@ -54,6 +54,15 @@ export class MarcaService {
     return await this.marcaRepo.save(marca);
   }
 
+  async getMarca(id: number) {
+    return await this.marcaRepo.findOne({ ids: [id] }).then((resp) => {
+      if (!resp) {
+        throw new NotFoundException('Marca não encontrada para visualização');
+      }
+      return resp;
+    });
+  }
+
   private async isDuplicada(
     uniqMarca: IUniqMarca,
     ignoredId?: number,
