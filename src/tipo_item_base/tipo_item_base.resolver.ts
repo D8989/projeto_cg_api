@@ -3,6 +3,7 @@ import { TipoItemBaseService } from './tipo_item_base.service';
 import { TipoItemBaseEntity } from './tipo_item_base.entity';
 import { CreateTipoItemBaseInput } from './dto/create-tipo_item_base.input';
 import { UpdateTipoItemBaseInput } from './dto/update-tipo_item_base.input';
+import { RespMessageClass } from 'src/common/classes/resp-message.class';
 
 @Resolver(() => TipoItemBaseEntity)
 export class TipoItemBaseResolver {
@@ -31,14 +32,18 @@ export class TipoItemBaseResolver {
     @Args('updateTipoItemBaseInput')
     updateTipoItemBaseInput: UpdateTipoItemBaseInput,
   ) {
-    let { id, ...dto } = updateTipoItemBaseInput;
+    const { id, ...dto } = updateTipoItemBaseInput;
 
     return await this.tipoItemBaseService.update(id, dto);
   }
 
-  @Mutation(() => String)
+  @Mutation(() => RespMessageClass)
   async removeTipoItemBase(@Args('id', { type: () => Int }) id: number) {
     await this.tipoItemBaseService.hardDelete(id);
-    return 'Tipo item-base removido com sucesso';
+
+    return new RespMessageClass({
+      id: id,
+      message: 'Tipo item-base removido com sucesso',
+    });
   }
 }
