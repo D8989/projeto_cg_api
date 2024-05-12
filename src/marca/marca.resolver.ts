@@ -1,8 +1,10 @@
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { MarcaService } from './marca.service';
 import { MarcaEntity } from './marca.entity';
 import { CreateMarcaInput } from './dto/create-marca.input';
 import { DataSource } from 'typeorm';
+import { ListMarcaDto } from './dto/list-marca.dto';
+import { ListMarcaOptionsDto } from './dto/list-marca-options.dto';
 
 @Resolver(() => MarcaEntity)
 export class MarcaResolver {
@@ -21,5 +23,17 @@ export class MarcaResolver {
     } catch (error) {
       throw error;
     }
+  }
+
+  @Query(() => ListMarcaDto, { name: 'marcas' })
+  async listMarcas(
+    @Args({ name: 'listOpt', type: () => ListMarcaOptionsDto, nullable: true })
+    opt?: ListMarcaOptionsDto,
+  ) {
+    return await this.marcaService
+      .getMarcasPaginada(new ListMarcaOptionsDto(opt))
+      .then((resp) => {
+        return new ListMarcaDto(resp);
+      });
   }
 }

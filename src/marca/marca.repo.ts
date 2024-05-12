@@ -29,6 +29,25 @@ export class MarcaRepo {
     });
   }
 
+  async findMany(opt: IOptMarca) {
+    const query = this.repo.createQueryBuilder('m');
+    this.buildSelect(query, opt);
+    this.buildWhere(query, opt);
+    this.buildOrder(query, opt);
+
+    return query.getMany();
+  }
+
+  async findAllAndCount(opt: IOptMarca) {
+    const query = this.repo.createQueryBuilder('m');
+    this.buildSelect(query, opt);
+    this.buildWhere(query, opt);
+    this.buildOrder(query, opt);
+    this.buildPagination(query, opt);
+
+    return await query.getManyAndCount();
+  }
+
   async findByExactNome(nome: string) {
     return this.findOne({ nome: { value: nome, typeOperator: 'exact' } });
   }
@@ -69,6 +88,28 @@ export class MarcaRepo {
 
     if (select && select.length > 0) {
       qb.select(select.map((s) => `${qb.alias}.${s}`));
+    }
+  }
+
+  private buildPagination(qb: SelectQueryBuilder<MarcaEntity>, opt: IOptMarca) {
+    const { limite, offset } = opt;
+    if (limite) {
+      qb.limit(limite);
+      qb.offset(offset || 0);
+    }
+  }
+
+  private buildOrder(qb: SelectQueryBuilder<MarcaEntity>, opt: IOptMarca) {
+    const { ordenarPor, ordem } = opt;
+
+    switch (ordenarPor) {
+      case 'nome':
+        qb.orderBy(`${qb.alias}.nomeUnique`, ordem || 'ASC');
+        break;
+
+      default:
+        qb.orderBy(`${qb.alias}.nomeUnique`, 'ASC');
+        break;
     }
   }
 

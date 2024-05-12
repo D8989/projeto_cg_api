@@ -8,6 +8,6 @@ export interface IFindOpt {
   ignoredId?: number;
   limite?: number;
   offset?: number;
-  ordenarPor?: number;
+  ordenarPor?: string;
   ordem?: 'ASC' | 'DESC';
 }

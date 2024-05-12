@@ -5,6 +5,7 @@ import { MarcaRepo } from './marca.repo';
 import { IOptMarca } from './interface/opt-marca.interface';
 import { MarcaEntity } from './marca.entity';
 import { StringFunctionsClass } from 'src/common/functions/string-functions.class';
+import { ListMarcaOptionsDto } from './dto/list-marca-options.dto';
 
 @Injectable()
 export class MarcaService {
@@ -27,6 +28,13 @@ export class MarcaService {
         nomeUnique: StringFunctionsClass.toLowerUnaccent(nome),
       }),
     );
+  }
+
+  async getMarcasPaginada(opt: ListMarcaOptionsDto) {
+    if (!opt.limite) {
+      opt.limite = 100;
+    }
+    return await this.marcaRepo.findAllAndCount(opt.toIFindMarca());
   }
 
   private async isDuplicada(
