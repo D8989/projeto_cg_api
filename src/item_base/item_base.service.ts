@@ -1,22 +1,18 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateItemBaseInput } from './dto/create-item_base.input';
-import { UpdateItemBaseInput } from './dto/update-item_base.input';
-import { InjectRepository } from '@nestjs/typeorm';
 import { ItemBaseEntity } from './item_base.entity';
-import { Brackets, ILike, In, Repository } from 'typeorm';
 import { TipoItemBaseService } from 'src/tipo_item_base/tipo_item_base.service';
 import { StringFunctionsClass } from 'src/common/functions/string-functions.class';
 import { ItemBaseDto } from './dto/item-base.dto';
 import { RespBollClass } from 'src/common/classes/resp-boll.class';
 import { ListItemBaseOptionsInput } from './dto/list-item-base-options.input';
 import { ObjectFunctions } from 'src/common/functions/object-functions.class';
-import { NotFoundError } from 'rxjs';
+import { ItemBaseRepo } from './item-base.repo';
 
 @Injectable()
 export class ItemBaseService {
   constructor(
-    @InjectRepository(ItemBaseEntity)
-    private itemBaseRepo: Repository<ItemBaseEntity>,
+    private itemBaseRepo: ItemBaseRepo,
     private tipoItemBaseService: TipoItemBaseService,
   ) {}
 
@@ -44,59 +40,21 @@ export class ItemBaseService {
     return await this.itemBaseRepo.save(item);
   }
 
-  async findAll(opt?: ListItemBaseOptionsInput) {
-    const query = this.itemBaseRepo.createQueryBuilder('ib');
-
-    if (opt && !ObjectFunctions.isObjectEmpty(opt)) {
-      if (opt.buscaSimples && opt.buscaSimples.length) {
-        query.innerJoin(`${query.alias}.tipoItemBase`, 'tib');
-        query.where(
-          new Brackets((qbW) => {
-            qbW
-              .where(`${query.alias}.nomeUnique ILIKE UNACCENT(LOWER(:busca))`)
-              .orWhere(`tib.nome ILIKE :busca`, {
-                busca: `%${opt.buscaSimples}%`,
-              });
-          }),
-        );
-      } else {
-        query.where('1=1');
-        if (opt.nome && opt.nome.length > 0) {
-          query.andWhere(
-            `${query.alias}.nomeUnique ILIKE UNACCENT(LOWER(:nome))`,
-            { nome: `%${opt.nome}%` },
-          );
-        }
-        if (opt.tipoItemBaseIds && opt.tipoItemBaseIds.length > 0) {
-          query.andWhere(`${query.alias}.tipoItemBaseId IN(:...tibIds)`, {
-            tibIds: opt.tipoItemBaseIds,
-          });
-        }
-      }
-    }
-
-    query.orderBy(`${query.alias}.nomeUnique`, 'ASC');
-
-    return await query.getMany();
+  async findAll(opt: ListItemBaseOptionsInput) {
+    return this.itemBaseRepo.findMany(opt.toIItemBase());
   }
 
   async findOne(id: number) {
-    return await this.itemBaseRepo.findOne({
-      where: { id },
-    });
+    return await this.itemBaseRepo.findOne({ ids: [id] });
   }
 
   async fetchOne(id: number) {
-    return await this.itemBaseRepo
-      .findOne({
-        where: { id },
-      })
-      .then((resp) => {
-        if (!resp) {
-          throw new BadRequestException('Item-base não encontrado');
-        }
-        return resp;
-      });
+    return await this.itemBaseRepo.findOne({ ids: [id] }).then((resp) => {
+      if (!resp) {
+        throw new BadRequestException('Item-base não encontrado');
+      }
+      return resp;
+    });
   }
 
   async update(id: number, dto: ItemBaseDto) {
@@ -143,7 +101,7 @@ export class ItemBaseService {
       throw new BadRequestException('item-base não encontrado para remoção');
     }
 
-    await this.itemBaseRepo.delete({ id });
+    await this.itemBaseRepo.hardDelete(id);
     return item;
   }
 
@@ -155,27 +113,20 @@ export class ItemBaseService {
     if (!nome) {
       throw new BadRequestException('Nome do item-base não informado');
     }
-    const query = this.itemBaseRepo
-      .createQueryBuilder('ib')
-      .select('ib.id')
-      .where('ib.nomeUnique = :nomeU', {
-        nomeU: StringFunctionsClass.toLowerUnaccent(nome),
-      });
+    const itemFound = await this.itemBaseRepo.findOne({
+      select: ['id'],
+      nomeUnique: StringFunctionsClass.toLowerUnaccent(nome),
+      ignoredId: ignoredId,
+    });
 
-    if (ignoredId) {
-      query.andWhere('ib.id <> :ibId', { ibId: ignoredId });
-    }
-
-    return await query.getOne().then(
-      (resp) =>
-        new RespBollClass(
-          resp
-            ? {
-                flag: false,
-                message: `Já existe um item-base com o nome "${nome}" no sistema`,
-              }
-            : { flag: true, message: `Nome "${nome}" pode ser usado` },
-        ),
-    );
+    return itemFound
+      ? {
+          flag: false,
+          message: `Já existe um item-base com o nome "${nome}" no sistema`,
+        }
+      : {
+          flag: true,
+          message: `Nome "${nome}" pode ser usado`,
+        };
   }
 }

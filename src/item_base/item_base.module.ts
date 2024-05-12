@@ -4,9 +4,11 @@ import { ItemBaseResolver } from './item_base.resolver';
 import { TipoItemBaseModule } from 'src/tipo_item_base/tipo_item_base.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ItemBaseEntity } from './item_base.entity';
+import { ItemBaseRepo } from './item-base.repo';
 
 @Module({
   imports: [TypeOrmModule.forFeature([ItemBaseEntity]), TipoItemBaseModule],
-  providers: [ItemBaseResolver, ItemBaseService],
+  providers: [ItemBaseResolver, ItemBaseService, ItemBaseRepo],
+  exports: [ItemBaseService],
 })
 export class ItemBaseModule {}
