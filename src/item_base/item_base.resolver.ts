@@ -4,9 +4,9 @@ import {
   Mutation,
   Args,
   Int,
-  ResolveProperty,
   Parent,
   Context,
+  ResolveField,
 } from '@nestjs/graphql';
 import { ItemBaseService } from './item_base.service';
 import { ItemBaseEntity } from './item_base.entity';
@@ -68,7 +68,7 @@ export class ItemBaseResolver {
     });
   }
 
-  @ResolveProperty('tipoItemBase', () => TipoItemBaseEntity)
+  @ResolveField('tipoItemBase', () => TipoItemBaseEntity)
   async getTiposBase(
     @Parent() ib: ItemBaseEntity,
     @Context('tibLoader') tibLoader: TibLoader,
