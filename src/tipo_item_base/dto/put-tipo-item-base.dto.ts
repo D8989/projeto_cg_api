@@ -1,14 +1,15 @@
-import { InputType, Int, Field } from '@nestjs/graphql';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Field, InputType } from '@nestjs/graphql';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 @InputType()
-export class CreateTipoItemBaseInput {
-  @Field(() => String, { description: 'nome do tipo' })
-  @ApiProperty({ type: String })
+export class PutTipoItemBaseDto {
+  @Field(() => String, { nullable: true, description: 'nome do tipo' })
+  @ApiPropertyOptional({ type: String })
   @IsString()
   @IsNotEmpty()
-  nome: string;
+  @IsOptional()
+  nome?: string;
 
   @Field(() => String, {
     nullable: true,
