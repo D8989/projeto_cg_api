@@ -111,8 +111,7 @@ export class TipoItemBaseService {
     const { nome } = dto;
     const query = this.tipoItemBaseRepository
       .createQueryBuilder('tib')
-      .select('tib.id')
-      .where('UPPER(UNACCENT(tib.nome)) = UPPER(UNACCENT(:nome))');
+      .select('tib.id');
     const replacements = {};
 
     if (type === 'create') {
@@ -122,21 +121,19 @@ export class TipoItemBaseService {
           message: 'Nome não informado para criação do tipo item-base',
         };
       }
+      query.where('UPPER(UNACCENT(tib.nome)) = UPPER(UNACCENT(:nome))');
       replacements['nome'] = nome;
     } else {
-      if (nome) {
-        if (nome.length === 0) {
-          return {
-            flag: false,
-            message: 'O nome do tipo não pode ser uma string vazia',
-          };
-        }
-        replacements['nome'] = nome;
+      if (!nome || nome.length === 0) {
+        return { flag: true, message: '' };
+      }
 
-        if (id) {
-          query.andWhere('tib.id <> :id');
-          replacements['id'] = id;
-        }
+      query.where('UPPER(UNACCENT(tib.nome)) = UPPER(UNACCENT(:nome))');
+      replacements['nome'] = nome;
+
+      if (id) {
+        query.andWhere('tib.id <> :id');
+        replacements['id'] = id;
       }
     }
 
