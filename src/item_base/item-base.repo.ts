@@ -115,11 +115,14 @@ export class ItemBaseRepo {
     opt: IOptItemBase,
   ) {
     const { select, customSelect } = opt;
-
-    qb.select([
+    const columns = [
       ...RepoFunctions.buildSimpleSelect(qb.alias, select),
       ...RepoFunctions.buildCustomSelect(this.alias, customSelect),
-    ]);
+    ];
+
+    if (columns.length > 0) {
+      qb.select(columns);
+    }
   }
 
   private buildPagination(

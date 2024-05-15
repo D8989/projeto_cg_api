@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Put,
 } from '@nestjs/common';
 import { ItemBaseService } from './item_base.service';
 import {
@@ -18,6 +19,7 @@ import {
 import { ItemBaseEntity } from './item_base.entity';
 import { ListItemBaseOptionsInput } from './dto/list-item-base-options.input';
 import { CreateItemBaseInput } from './dto/create-item_base.input';
+import { PutItemBaseDto } from './dto/put-item-base.dto';
 
 @Controller('Item-base')
 @ApiTags('item-base')
@@ -75,26 +77,32 @@ export class ItemBaseController {
       throw error;
     }
   }
-  /*
+
   @Put(':id')
   @ApiOkResponse({
     description: 'Nome alterado com sucesso',
-    type: () => TipoItemBaseEntity,
+    type: () => ItemBaseEntity,
   })
   @ApiBadRequestResponse({
-    description: 'Errp das regras de alteração do nome do tipo',
+    description: 'Erro das regras de alteração do item-base',
   })
   async patchNome(
     @Param('id', ParseIntPipe) id: number,
-    @Body() putDto: PutTipoItemBaseDto,
+    @Body() putDto: PutItemBaseDto,
   ) {
     try {
-      return await this.tipoItemBaseService.update(id, putDto);
+      const item = await this.itemBaseService.update(id, putDto);
+      return new ItemBaseEntity({
+        id: item.id,
+        nome: item.nome,
+        descricao: item.descricao,
+      });
     } catch (error) {
       throw error;
     }
   }
 
+  /*
   @Delete(':id')
   @ApiOkResponse({ description: 'Tipo item-base removido com sucesso.' })
   @ApiNotFoundResponse({ description: 'Tipo informado não existe.' })

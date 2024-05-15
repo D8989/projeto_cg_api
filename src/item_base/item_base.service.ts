@@ -25,7 +25,7 @@ export class ItemBaseService {
     const { tipoItemBaseId, nome, descricao } = createItemBaseInput;
 
     await Promise.all([
-      this.checkDuplicada(createItemBaseInput),
+      this.checkDuplicada(createItemBaseInput, 'create'),
       this.tipoItemBaseService.exist(tipoItemBaseId),
     ]).then((resps) => {
       for (const resp of resps) {
@@ -84,7 +84,7 @@ export class ItemBaseService {
     }
 
     await Promise.all([
-      this.checkDuplicada(dto, item.id),
+      this.checkDuplicada(dto, 'update', item.id),
       itemDto.tipoItemBaseId
         ? this.tipoItemBaseService.exist(itemDto.tipoItemBaseId)
         : { flag: true, message: '' },
@@ -122,17 +122,36 @@ export class ItemBaseService {
 
   async checkDuplicada(
     dto: ItemBaseDto,
+    type: 'create' | 'update',
     ignoredId?: number,
   ): Promise<RespBollClass> {
     const { nome } = dto;
-    if (!nome) {
-      throw new BadRequestException('Nome do item-base não informado');
-    }
-    const itemFound = await this.itemBaseRepo.findOne({
+    const opt: IOptItemBase = {
       select: ['id'],
-      nomeUnique: StringFunctionsClass.toLowerUnaccent(nome),
-      ignoredId: ignoredId,
-    });
+    };
+
+    if (type === 'create') {
+      if (!nome) {
+        return { flag: false, message: 'Nome do item-base não informado' };
+      }
+    } else if (type === 'update') {
+      if (!nome) {
+        return { flag: true, message: 'Não alterará o campo único' };
+      }
+      if (!ignoredId) {
+        return {
+          flag: false,
+          message: 'Id do item editado não informado para validar duplicada',
+        };
+      }
+
+      opt.ignoredId = ignoredId;
+    } else {
+      return { flag: false, message: `Tipo ${type} desconhecido` };
+    }
+
+    opt.nomeUnique = StringFunctionsClass.toLowerUnaccent(nome);
+    const itemFound = await this.itemBaseRepo.findOne(opt);
 
     return itemFound
       ? {
