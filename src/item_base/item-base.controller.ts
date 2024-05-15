@@ -8,20 +8,23 @@ import {
 } from '@nestjs/common';
 import { ItemBaseService } from './item_base.service';
 import {
+  ApiBadRequestResponse,
   ApiBody,
+  ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { ItemBaseEntity } from './item_base.entity';
 import { ListItemBaseOptionsInput } from './dto/list-item-base-options.input';
+import { CreateItemBaseInput } from './dto/create-item_base.input';
 
 @Controller('Item-base')
 @ApiTags('item-base')
 export class ItemBaseController {
   constructor(private itemBaseService: ItemBaseService) {}
 
-  @Post()
+  @Post('/list')
   @ApiOkResponse({
     description: 'Retorno da lista dos itens-base',
     type: ItemBaseEntity,
@@ -53,21 +56,26 @@ export class ItemBaseController {
       throw error;
     }
   }
-  /*
+
   @Post()
   @ApiCreatedResponse({
     description: 'Criação do novo tipo de item-base',
-    type: () => TipoItemBaseEntity,
+    type: () => ItemBaseEntity,
   })
   @ApiBadRequestResponse({ description: 'Erro das regras de criação do tipo' })
-  async createTipo(@Body() createTipoDto: CreateTipoItemBaseInput) {
+  async createTipo(@Body() createTipoDto: CreateItemBaseInput) {
     try {
-      return await this.tipoItemBaseService.create(createTipoDto);
+      const item = await this.itemBaseService.create(createTipoDto);
+      return new ItemBaseEntity({
+        id: item.id,
+        nome: item.nome,
+        descricao: item.descricao,
+      });
     } catch (error) {
       throw error;
     }
   }
-
+  /*
   @Put(':id')
   @ApiOkResponse({
     description: 'Nome alterado com sucesso',
