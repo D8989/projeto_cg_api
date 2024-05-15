@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateItemBaseInput } from './dto/create-item_base.input';
 import { ItemBaseEntity } from './item_base.entity';
 import { TipoItemBaseService } from 'src/tipo_item_base/tipo_item_base.service';
@@ -8,6 +12,7 @@ import { RespBollClass } from 'src/common/classes/resp-boll.class';
 import { ListItemBaseOptionsInput } from './dto/list-item-base-options.input';
 import { ObjectFunctions } from 'src/common/functions/object-functions.class';
 import { ItemBaseRepo } from './item-base.repo';
+import { IOptItemBase } from './interface/opt-item-base.interface';
 
 @Injectable()
 export class ItemBaseService {
@@ -46,17 +51,25 @@ export class ItemBaseService {
     return this.itemBaseRepo.findMany(opt.toIItemBase());
   }
 
-  async findOne(id: number) {
-    return await this.itemBaseRepo.findOne({ ids: [id] });
+  async findOne(id: number, opt?: IOptItemBase) {
+    return await this.itemBaseRepo.findOne({
+      ...opt,
+      ids: [id],
+    });
   }
 
-  async fetchOne(id: number) {
-    return await this.itemBaseRepo.findOne({ ids: [id] }).then((resp) => {
-      if (!resp) {
-        throw new BadRequestException('Item-base não encontrado');
-      }
-      return resp;
-    });
+  async fetchOne(id: number, opt?: IOptItemBase) {
+    return await this.itemBaseRepo
+      .findOne({
+        ...opt,
+        ids: [id],
+      })
+      .then((resp) => {
+        if (!resp) {
+          throw new NotFoundException('Item-base não encontrado');
+        }
+        return resp;
+      });
   }
 
   async update(id: number, dto: ItemBaseDto) {

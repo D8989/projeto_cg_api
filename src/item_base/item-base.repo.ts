@@ -28,6 +28,8 @@ export class ItemBaseRepo {
 
   async findOne(opt: IOptItemBase) {
     const query = this.repo.createQueryBuilder('ib');
+
+    this.buildJoin(query, opt);
     this.buildSelect(query, opt);
     this.buildWhere(query, opt);
 

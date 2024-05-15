@@ -37,18 +37,22 @@ export class ListItemBaseOptionsInput extends BaseListItemBaseOptionsInput {
     if (this.byController) {
       return {
         ...this,
-        nome: this.nome
-          ? { value: this.nome, typeOperator: 'ilike' }
-          : undefined,
-        select: ['id', 'nome', 'descricao'],
-        customSelect: {
-          tib: ['id', 'nome', 'descricao'],
-        },
+        ...this.toSelectBase(),
       };
     }
     return {
       ...this,
       nome: this.nome ? { value: this.nome, typeOperator: 'ilike' } : undefined,
+    };
+  }
+
+  toSelectBase(): IOptItemBase {
+    return {
+      nome: this.nome ? { value: this.nome, typeOperator: 'ilike' } : undefined,
+      select: ['id', 'nome', 'descricao'],
+      customSelect: {
+        tib: ['id', 'nome', 'descricao'],
+      },
     };
   }
 }

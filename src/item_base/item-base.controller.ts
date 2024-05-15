@@ -1,6 +1,18 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+} from '@nestjs/common';
 import { ItemBaseService } from './item_base.service';
-import { ApiBody, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ItemBaseEntity } from './item_base.entity';
 import { ListItemBaseOptionsInput } from './dto/list-item-base-options.input';
 
@@ -25,24 +37,23 @@ export class ItemBaseController {
       throw error;
     }
   }
-  /*
+
   @Get('/:id')
   @ApiOkResponse({
     description: 'Retorno de um tipo item-base',
-    type: () => TipoItemBaseEntity,
+    type: () => ItemBaseEntity,
     isArray: false,
   })
-  @ApiNotFoundResponse({ description: 'Tipo informado não encontrado' })
+  @ApiNotFoundResponse({ description: 'Item informado não encontrado' })
   async getTipo(@Param('id', ParseIntPipe) id: number) {
     try {
-      return await this.tipoItemBaseService.findOne(id, {
-        select: ['id', 'nome', 'descricao'],
-      });
+      const listOpt = new ListItemBaseOptionsInput();
+      return await this.itemBaseService.fetchOne(id, listOpt.toSelectBase());
     } catch (error) {
       throw error;
     }
   }
-
+  /*
   @Post()
   @ApiCreatedResponse({
     description: 'Criação do novo tipo de item-base',

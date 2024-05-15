@@ -1,6 +1,6 @@
 import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
 import { IFindOpt } from '../interfaces/find-opt.interface';
-import { IsIn, IsInt, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsIn, IsInt, IsOptional, IsString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 @InputType()
@@ -35,6 +35,13 @@ export class ListOptionsDto implements IFindOpt {
   @IsString()
   @IsOptional()
   buscaSimples?: string;
+
+  @Field(() => [Int], { nullable: true })
+  @ApiPropertyOptional({ nullable: true, type: Number, isArray: true })
+  @IsArray()
+  @IsInt({ each: true })
+  @IsOptional()
+  ids?: number[];
 
   constructor(partial?: Partial<ListOptionsDto>) {
     this.limite = partial?.limite;
