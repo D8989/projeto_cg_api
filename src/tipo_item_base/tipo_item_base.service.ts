@@ -33,16 +33,20 @@ export class TipoItemBaseService {
     );
   }
 
-  async findAll() {
+  async findAll(opt?: IOptTipoItemBase) {
     return await this.tipoItemBaseRepository.findMany({
+      ...opt,
       ordenarPor: 'nome',
       ordem: 'ASC',
     });
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, opt?: IOptTipoItemBase) {
     return await this.tipoItemBaseRepository
-      .findOne({ ids: [id] })
+      .findOne({
+        ...opt,
+        ids: [id],
+      })
       .then((resp) => {
         if (!resp) {
           throw new NotFoundException('Tipo item-base não foi encontrado');
