@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -102,17 +103,15 @@ export class ItemBaseController {
     }
   }
 
-  /*
   @Delete(':id')
-  @ApiOkResponse({ description: 'Tipo item-base removido com sucesso.' })
-  @ApiNotFoundResponse({ description: 'Tipo informado não existe.' })
-  async hardDeleteTipo(@Param('id') id: number) {
+  @ApiOkResponse({ description: 'Item-base removido com sucesso.' })
+  @ApiNotFoundResponse({ description: 'Item-base informado não existe.' })
+  async hardDeleteTipo(@Param('id', ParseIntPipe) id: number) {
     try {
-      await this.tipoItemBaseService.hardDelete(id);
+      await this.itemBaseService.remove(id);
       return { message: 'Tipo item-base removido com sucesso' };
     } catch (error) {
       throw error;
     }
   }
-  */
 }
