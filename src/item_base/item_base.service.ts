@@ -41,6 +41,8 @@ export class ItemBaseService {
   }
 
   async findAll(opt: ListItemBaseOptionsInput) {
+    opt.limite = undefined;
+    opt.offset = undefined;
     return this.itemBaseRepo.findMany(opt.toIItemBase());
   }
 

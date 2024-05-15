@@ -9,9 +9,13 @@ import {
 } from 'typeorm';
 import { IOptItemBase } from './interface/opt-item-base.interface';
 import { RepoFunctions } from 'src/common/functions/repo-functions.class';
+import { ObjectFunctions } from 'src/common/functions/object-functions.class';
 
 @Injectable()
 export class ItemBaseRepo {
+  private readonly tibAlias = 'tib';
+  private readonly alias = [this.tibAlias];
+
   constructor(
     @InjectRepository(ItemBaseEntity)
     private repo: Repository<ItemBaseEntity>,
@@ -35,6 +39,7 @@ export class ItemBaseRepo {
   async findMany(opt: IOptItemBase) {
     const query = this.repo.createQueryBuilder('ib');
 
+    this.buildJoin(query, opt);
     this.buildSelect(query, opt);
     this.buildWhere(query, opt);
     this.buildOrder(query, opt);
@@ -73,12 +78,11 @@ export class ItemBaseRepo {
     }
 
     if (buscaSimples) {
-      qb.innerJoin(`${alias}.tipoItemBase`, 'tib');
       qb.where(
         new Brackets((qbW) => {
           qbW
             .where(`${alias}.nomeUnique ILIKE UNACCENT(LOWER(:busca))`)
-            .orWhere(`tib.nome ILIKE :busca`, {
+            .orWhere(`${this.tibAlias}.nome ILIKE :busca`, {
               busca: `%${buscaSimples}%`,
             });
         }),
@@ -110,9 +114,10 @@ export class ItemBaseRepo {
   ) {
     const { select, customSelect } = opt;
 
-    if (select && select.length > 0) {
-      qb.select(select.map((s) => `${qb.alias}.${s}`));
-    }
+    qb.select([
+      ...RepoFunctions.buildSimpleSelect(qb.alias, select),
+      ...RepoFunctions.buildCustomSelect(this.alias, customSelect),
+    ]);
   }
 
   private buildPagination(
@@ -141,5 +146,47 @@ export class ItemBaseRepo {
         qb.orderBy(`${qb.alias}.nomeUnique`, 'ASC');
         break;
     }
+  }
+
+  private buildJoin(qb: SelectQueryBuilder<ItemBaseEntity>, opt: IOptItemBase) {
+    const { buscaSimples, customSelect } = opt;
+    const joinedAlias: string[] = [];
+
+    if (customSelect) {
+      const keys = ObjectFunctions.getValidKeys(customSelect, this.alias);
+      for (const key of keys) {
+        const alias = this.alias.find((al) => al === key);
+        if (alias) {
+          const isJoined = this.buildSpecificJoin(qb, alias);
+          if (isJoined) {
+            joinedAlias.push(alias);
+          }
+        }
+      }
+    }
+
+    if (
+      !joinedAlias.includes(this.tibAlias) &&
+      buscaSimples &&
+      buscaSimples.length > 0
+    ) {
+      qb.innerJoin(`${qb.alias}.tipoItemBase`, this.tibAlias);
+    }
+  }
+
+  private buildSpecificJoin(
+    qb: SelectQueryBuilder<ItemBaseEntity>,
+    alias?: string,
+  ) {
+    switch (alias) {
+      case this.tibAlias:
+        qb.innerJoin(`${qb.alias}.tipoItemBase`, this.tibAlias);
+        break;
+
+      default:
+        return false;
+    }
+
+    return true;
   }
 }

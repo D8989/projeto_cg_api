@@ -36,4 +36,16 @@ export class ObjectFunctions {
       return previous;
     }, {});
   }
+
+  static getKeys<T extends object>(obj: T): string[] {
+    return Object.keys(obj);
+  }
+
+  static getValidKeys(obj?: MyObject, validKeys: string[] = []): string[] {
+    if (!obj) {
+      return [];
+    }
+    const keys = ObjectFunctions.getKeys(obj);
+    return keys.filter((k) => validKeys.includes(k));
+  }
 }

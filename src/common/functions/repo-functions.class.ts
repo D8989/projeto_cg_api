@@ -1,5 +1,6 @@
 import { ObjectLiteral, SelectQueryBuilder } from 'typeorm';
 import { IColumnStrOpt } from '../interfaces/column-string-opt.interface';
+import { ObjectFunctions } from './object-functions.class';
 
 export class RepoFunctions {
   static decomptIColumnStrOpt<T extends ObjectLiteral>(
@@ -30,5 +31,31 @@ export class RepoFunctions {
       default:
         break;
     }
+  }
+
+  static buildSimpleSelect(alias: string, select?: string[]): string[] {
+    return select && select.length > 0
+      ? select.map((s) => `${alias}.${s}`)
+      : [];
+  }
+
+  static buildCustomSelect(
+    entityAliases: string[],
+    customSelect?: MyObject,
+  ): string[] {
+    if (!customSelect) {
+      return [];
+    }
+
+    const validAliases = ObjectFunctions.getValidKeys(
+      customSelect,
+      entityAliases,
+    );
+    return validAliases.reduce((columns, alias) => {
+      return [
+        ...columns,
+        ...customSelect[alias].map((col) => `${alias}.${col}`),
+      ];
+    }, []);
   }
 }
