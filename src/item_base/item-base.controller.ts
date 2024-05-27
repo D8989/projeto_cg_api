@@ -22,8 +22,8 @@ import { ListItemBaseOptionsInput } from './dto/list-item-base-options.input';
 import { CreateItemBaseInput } from './dto/create-item_base.input';
 import { PutItemBaseDto } from './dto/put-item-base.dto';
 
-@Controller('Item-base')
-@ApiTags('item-base')
+@Controller('item-base')
+@ApiTags('Item-base')
 export class ItemBaseController {
   constructor(private itemBaseService: ItemBaseService) {}
 

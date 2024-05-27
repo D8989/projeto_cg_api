@@ -1,15 +1,18 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import 'dotenv/config';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('marca', { schema: process.env.SCHEMA })
 @ObjectType()
 export class MarcaEntity {
   @PrimaryGeneratedColumn()
+  @ApiProperty({ type: Number })
   @Field(() => Int)
   id: number;
 
   @Column('varchar')
+  @ApiProperty({ type: String })
   @Field(() => String)
   nome: string;
 
@@ -17,6 +20,7 @@ export class MarcaEntity {
   nomeUnique: string;
 
   @Column('varchar', { nullable: true })
+  @ApiProperty({ type: String })
   @Field(() => String, { nullable: true })
   descricao?: string;
 
