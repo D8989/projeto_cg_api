@@ -92,7 +92,7 @@ export class MarcaController {
   @ApiNotFoundResponse({ description: 'Item informado não encontrado' })
   async getTipo(@Param('id', ParseIntPipe) id: number) {
     try {
-      return await this.marcaService.getMarca(id);
+      return await this.marcaService.fetchMarca(id);
     } catch (error) {
       throw error;
     }

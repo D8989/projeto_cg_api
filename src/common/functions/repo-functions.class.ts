@@ -58,4 +58,11 @@ export class RepoFunctions {
       ];
     }, []);
   }
+
+  static hasAlias<T extends ObjectLiteral>(
+    qb: SelectQueryBuilder<T>,
+    alias: string,
+  ): boolean {
+    return qb.expressionMap.aliases.map((al) => al.name).includes(alias);
+  }
 }
