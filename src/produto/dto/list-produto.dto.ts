@@ -1,18 +1,18 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { MarcaEntity } from '../marca.entity';
+import { ProdutoEntity } from '../produto.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 @ObjectType()
-export class ListMarcaDto {
+export class ListProdutoDto {
   @Field(() => Int)
   @ApiProperty({ type: Number })
   total: number;
 
-  @Field(() => [MarcaEntity])
-  @ApiProperty({ type: () => MarcaEntity, isArray: true })
-  dados: MarcaEntity[];
+  @Field(() => [ProdutoEntity])
+  @ApiProperty({ type: () => ProdutoEntity, isArray: true })
+  dados: ProdutoEntity[];
 
-  constructor(resp: [MarcaEntity[], number]) {
+  constructor(resp: [ProdutoEntity[], number]) {
     this.total = resp[1];
     this.dados = resp[0];
   }

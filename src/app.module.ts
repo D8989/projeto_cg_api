@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ItemBaseModule } from './item_base/item_base.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AppResolver } from './app.resolver';
@@ -11,7 +10,7 @@ import { ConfigService } from './config/config.service';
 import { createTipoItemBaseLoader } from './tipo_item_base/tipo_item_base.loader';
 import { TipoItemBaseService } from './tipo_item_base/tipo_item_base.service';
 import { TipoItemBaseModule } from './tipo_item_base/tipo_item_base.module';
-import { MarcaModule } from './marca/marca.module';
+import { ProdutoModule } from './produto/produto.module';
 
 @Module({
   imports: [
@@ -44,8 +43,7 @@ import { MarcaModule } from './marca/marca.module';
       inject: [ConfigService],
     }),
     ConfigModule,
-    ItemBaseModule,
-    MarcaModule,
+    ProdutoModule,
   ],
   controllers: [AppController],
   providers: [AppService, AppResolver],
