@@ -25,7 +25,6 @@ export class RepoFunctions {
           `UNACCENT(UPPER(${alias}.${column})) ILIKE UNACCENT(UPPER(:value))`,
           { value: `%${iColumn.value}%` },
         );
-
         break;
 
       default:
@@ -64,5 +63,41 @@ export class RepoFunctions {
     alias: string,
   ): boolean {
     return qb.expressionMap.aliases.map((al) => al.name).includes(alias);
+  }
+
+  // IDEIA NÃO USADA
+  static buildOrWhereStr<T extends ObjectLiteral>(
+    qb: SelectQueryBuilder<T>,
+    aliasInfo: { alias: string; column: string }[],
+    value: string,
+    operator: string,
+  ) {
+    switch (operator) {
+      case 'exact':
+        for (const alInfo of aliasInfo) {
+          qb.orWhere(`${alInfo.alias}.${alInfo.column} = :value`, { value });
+        }
+        break;
+
+      case 'like':
+        for (const alInfo of aliasInfo) {
+          qb.orWhere(`${alInfo.alias}.${alInfo.column} LIKE :value`, {
+            value: `%${value}%`,
+          });
+        }
+        break;
+
+      case 'ilike':
+        for (const alInfo of aliasInfo) {
+          qb.orWhere(
+            `UNACCENT(${alInfo.alias}.${alInfo.column}) ILIKE UNACCENT(:value)`,
+            { value: `%${value}%` },
+          );
+        }
+        break;
+
+      default:
+        break;
+    }
   }
 }

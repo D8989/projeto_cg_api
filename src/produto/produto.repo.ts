@@ -1,9 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProdutoEntity } from './produto.entity';
-import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import {
+  Brackets,
+  EntityManager,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { IOptProduto } from './interface/opt-produto.interface';
 import { ARepo } from 'src/common/classes/repo.abstract';
+import { RepoFunctions } from 'src/common/functions/repo-functions.class';
+import { ObjectFunctions } from 'src/common/functions/object-functions.class';
 
 @Injectable()
 export class ProdutoRepo extends ARepo<ProdutoEntity, IOptProduto> {
@@ -38,10 +45,45 @@ export class ProdutoRepo extends ARepo<ProdutoEntity, IOptProduto> {
     return query.getManyAndCount();
   }
 
-  protected buildWhere(
+  protected override buildWhere(
     qb: SelectQueryBuilder<ProdutoEntity>,
     opt: IOptProduto,
-  ) {}
+  ) {
+    const { buscaSimples, ids, nome, marcaNome, itemBaseNome } = opt;
+    const alias = qb.alias;
+
+    qb.where(`${alias}.desativadoEm IS NULL`);
+    if (buscaSimples && buscaSimples.length > 0) {
+      qb.andWhere(
+        new Brackets((qbW) => {
+          qbW
+            .where(`UNACCENT(${alias}.nome) ILIKE UNACCENT(:busca)`)
+            .orWhere(`UNACCENT(${this.mAlias}.nome) ILIKE UNACCENT(:busca)`)
+            .orWhere(`UNACCENT(${this.ibAlias}.nome) ILIKE UNACCENT(:busca)`, {
+              busca: `%${buscaSimples}%`,
+            });
+        }),
+      );
+    } else {
+      if (ids && ids.length > 0) {
+        qb.andWhere(`${alias}.id IN(:...ids)`, { ids });
+      }
+      if (nome) {
+        RepoFunctions.decomptIColumnStrOpt(qb, alias, 'nome', nome);
+      }
+      if (marcaNome) {
+        RepoFunctions.decomptIColumnStrOpt(qb, this.mAlias, 'nome', marcaNome);
+      }
+      if (itemBaseNome) {
+        RepoFunctions.decomptIColumnStrOpt(
+          qb,
+          this.ibAlias,
+          'nome',
+          itemBaseNome,
+        );
+      }
+    }
+  }
 
   protected buildOrder(
     qb: SelectQueryBuilder<ProdutoEntity>,
@@ -77,5 +119,33 @@ export class ProdutoRepo extends ARepo<ProdutoEntity, IOptProduto> {
     }
 
     return true;
+  }
+
+  protected override buildJoin(
+    qb: SelectQueryBuilder<ProdutoEntity>,
+    opt: IOptProduto,
+  ) {
+    const { buscaSimples, customSelect, marcaNome, itemBaseNome } = opt;
+
+    if (buscaSimples && buscaSimples.length > 0) {
+      this.joinAll(qb);
+    } else {
+      if (customSelect) {
+        const keys = ObjectFunctions.getValidKeys(customSelect, this.alias);
+        for (const key of keys) {
+          const alias = this.alias.find((al) => al === key);
+          if (alias && !RepoFunctions.hasAlias(qb, alias)) {
+            this.buildSpecificJoin(qb, alias);
+          }
+        }
+      }
+
+      if (marcaNome && !RepoFunctions.hasAlias(qb, this.mAlias)) {
+        qb.innerJoin(`${qb.alias}.marca`, this.mAlias);
+      }
+      if (itemBaseNome && !RepoFunctions.hasAlias(qb, this.ibAlias)) {
+        qb.innerJoin(`${qb.alias}.itemBase`, this.ibAlias);
+      }
+    }
   }
 }
