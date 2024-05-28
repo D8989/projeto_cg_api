@@ -3,18 +3,20 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ProdutoEntity } from './produto.entity';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { IOptProduto } from './interface/opt-produto.interface';
-import { RepoFunctions } from 'src/common/functions/repo-functions.class';
-import { ObjectFunctions } from 'src/common/functions/object-functions.class';
+import { ARepo } from 'src/common/classes/repo.abstract';
 
 @Injectable()
-export class ProdutoRepo {
-  private readonly mAlias = 'm';
-  private readonly ibAlias = 'ib';
-  private readonly alias = [this.mAlias, this.ibAlias];
+export class ProdutoRepo extends ARepo<ProdutoEntity, IOptProduto> {
+  private readonly mAlias: string;
+  private readonly ibAlias: string;
   constructor(
     @InjectRepository(ProdutoEntity)
     private produtoRepo: Repository<ProdutoEntity>,
-  ) {}
+  ) {
+    super(['m', 'ib']);
+    this.mAlias = 'm';
+    this.ibAlias = 'ib';
+  }
 
   async saveMany(produtos: ProdutoEntity[], ent?: EntityManager) {
     const repo = ent?.getRepository(ProdutoEntity) || this.produtoRepo;
@@ -36,37 +38,15 @@ export class ProdutoRepo {
     return query.getManyAndCount();
   }
 
-  private buildJoin(qb: SelectQueryBuilder<ProdutoEntity>, opt: IOptProduto) {
-    const { buscaSimples, customSelect } = opt;
+  protected buildWhere(
+    qb: SelectQueryBuilder<ProdutoEntity>,
+    opt: IOptProduto,
+  ) {}
 
-    if (buscaSimples && buscaSimples.length > 0) {
-      this.joinAll(qb);
-    } else if (customSelect) {
-      const keys = ObjectFunctions.getValidKeys(customSelect, this.alias);
-      for (const key of keys) {
-        const alias = this.alias.find((al) => al === key);
-        if (alias && !RepoFunctions.hasAlias(qb, alias)) {
-          this.buildSpecificJoin(qb, alias);
-        }
-      }
-    }
-  }
-
-  private buildSelect(qb: SelectQueryBuilder<ProdutoEntity>, opt: IOptProduto) {
-    const { select, customSelect } = opt;
-    const columns = [
-      ...RepoFunctions.buildSimpleSelect(qb.alias, select),
-      ...RepoFunctions.buildCustomSelect(this.alias, customSelect),
-    ];
-
-    if (columns.length > 0) {
-      qb.select(columns);
-    }
-  }
-
-  private buildWhere(qb: SelectQueryBuilder<ProdutoEntity>, opt: IOptProduto) {}
-
-  private buildOrder(qb: SelectQueryBuilder<ProdutoEntity>, opt: IOptProduto) {
+  protected buildOrder(
+    qb: SelectQueryBuilder<ProdutoEntity>,
+    opt: IOptProduto,
+  ) {
     const ordem = opt.ordem || 'ASC';
     switch (opt.ordenarPor) {
       case 'nome':
@@ -79,17 +59,7 @@ export class ProdutoRepo {
     }
   }
 
-  private buildPagination(
-    qb: SelectQueryBuilder<ProdutoEntity>,
-    opt: IOptProduto,
-  ) {
-    const { limite, offset } = opt;
-    if (limite && limite > 0) {
-      qb.limit(limite).offset(offset);
-    }
-  }
-
-  private buildSpecificJoin(
+  protected buildSpecificJoin(
     qb: SelectQueryBuilder<ProdutoEntity>,
     alias?: string,
   ) {
@@ -107,13 +77,5 @@ export class ProdutoRepo {
     }
 
     return true;
-  }
-
-  private joinAll(qb: SelectQueryBuilder<ProdutoEntity>) {
-    for (const alias of this.alias) {
-      if (!RepoFunctions.hasAlias(qb, alias)) {
-        this.buildSpecificJoin(qb, alias);
-      }
-    }
   }
 }
