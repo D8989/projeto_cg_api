@@ -14,7 +14,7 @@ import { DataSource } from 'typeorm';
 import { ListProdutoDto } from './dto/list-produto.dto';
 import { ListProdutoOptionsDto } from './dto/list-produto-options.dto';
 import { ItemBaseEntity } from 'src/item_base/item_base.entity';
-import { IbLoader } from 'src/item_base/item-base.loader';
+import { IbLoader } from 'src/loader/types/item-base-loader.type';
 
 @Resolver(() => ProdutoEntity)
 export class ProdutoResolver {

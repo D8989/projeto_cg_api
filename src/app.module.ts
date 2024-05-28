@@ -7,31 +7,24 @@ import { AppResolver } from './app.resolver';
 import { ConfigModule } from './config/config.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from './config/config.service';
-import { createTipoItemBaseLoader } from './tipo_item_base/tipo_item_base.loader';
-import { TipoItemBaseService } from './tipo_item_base/tipo_item_base.service';
-import { TipoItemBaseModule } from './tipo_item_base/tipo_item_base.module';
 import { ProdutoModule } from './produto/produto.module';
-import { ItemBaseModule } from './item_base/item_base.module';
-import { ItemBaseService } from './item_base/item_base.service';
-import { createItemBaseLoader } from './item_base/item-base.loader';
+import { LoaderModule } from './loader/loader.module';
+import { LoaderService } from './loader/loader.service';
 
 @Module({
   imports: [
     GraphQLModule.forRootAsync<ApolloDriverConfig>({
-      imports: [TipoItemBaseModule, ItemBaseModule],
+      imports: [LoaderModule],
       driver: ApolloDriver,
-      useFactory: (
-        tibService: TipoItemBaseService,
-        ibService: ItemBaseService,
-      ) => ({
+      useFactory: (service: LoaderService) => ({
         playground: true,
         autoSchemaFile: 'schema.gql',
         context: () => ({
-          tibLoader: createTipoItemBaseLoader(tibService),
-          ibLoader: createItemBaseLoader(ibService),
+          tibLoader: service.createLoaderTipoItemBase(),
+          ibLoader: service.createLoaderItemBase(),
         }),
       }),
-      inject: [TipoItemBaseService, ItemBaseService],
+      inject: [LoaderService],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -51,6 +44,7 @@ import { createItemBaseLoader } from './item_base/item-base.loader';
     }),
     ConfigModule,
     ProdutoModule,
+    LoaderModule,
   ],
   controllers: [AppController],
   providers: [AppService, AppResolver],

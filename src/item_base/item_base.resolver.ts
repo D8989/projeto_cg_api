@@ -15,7 +15,7 @@ import { UpdateItemBaseInput } from './dto/update-item_base.input';
 import { DataSource } from 'typeorm';
 import { ListItemBaseOptionsInput } from './dto/list-item-base-options.input';
 import { TipoItemBaseEntity } from 'src/tipo_item_base/tipo_item_base.entity';
-import { TibLoader } from 'src/tipo_item_base/tipo_item_base.loader';
+import { TibLoader } from 'src/loader/types/tipo-item-base-loader.type';
 import { RespMessageClass } from 'src/common/classes/resp-message.class';
 
 @Resolver(() => ItemBaseEntity)
