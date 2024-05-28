@@ -11,20 +11,27 @@ import { createTipoItemBaseLoader } from './tipo_item_base/tipo_item_base.loader
 import { TipoItemBaseService } from './tipo_item_base/tipo_item_base.service';
 import { TipoItemBaseModule } from './tipo_item_base/tipo_item_base.module';
 import { ProdutoModule } from './produto/produto.module';
+import { ItemBaseModule } from './item_base/item_base.module';
+import { ItemBaseService } from './item_base/item_base.service';
+import { createItemBaseLoader } from './item_base/item-base.loader';
 
 @Module({
   imports: [
     GraphQLModule.forRootAsync<ApolloDriverConfig>({
-      imports: [TipoItemBaseModule],
+      imports: [TipoItemBaseModule, ItemBaseModule],
       driver: ApolloDriver,
-      useFactory: (tibService: TipoItemBaseService) => ({
+      useFactory: (
+        tibService: TipoItemBaseService,
+        ibService: ItemBaseService,
+      ) => ({
         playground: true,
         autoSchemaFile: 'schema.gql',
         context: () => ({
           tibLoader: createTipoItemBaseLoader(tibService),
+          ibLoader: createItemBaseLoader(ibService),
         }),
       }),
-      inject: [TipoItemBaseService],
+      inject: [TipoItemBaseService, ItemBaseService],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

@@ -163,4 +163,13 @@ export class ItemBaseService {
           message: `Nome "${nome}" pode ser usado`,
         };
   }
+
+  async findByIds(ids: number[]): Promise<ItemBaseEntity[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    return await this.itemBaseRepo.findMany({
+      ids: ids,
+    });
+  }
 }
