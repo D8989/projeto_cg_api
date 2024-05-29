@@ -116,6 +116,19 @@ export class ItemBaseService {
       throw new BadRequestException('item-base não encontrado para remoção');
     }
 
+    const qtdProdutos = await this.itemBaseRepo.getQtdProdutos(item.id);
+    if (!qtdProdutos) {
+      throw new BadRequestException(
+        'Não possível definir se o item tem produtos cadastrados',
+      );
+    }
+
+    if (qtdProdutos > 0) {
+      throw new BadRequestException(
+        'Não é possível desativar item-base com produto cadastrado',
+      );
+    }
+
     await this.itemBaseRepo.hardDelete(id);
     return item;
   }

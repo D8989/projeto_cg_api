@@ -67,7 +67,7 @@ export class ProdutoEntity {
   marca: MarcaEntity;
 
   @ApiProperty({ type: () => ItemBaseEntity })
-  @ManyToOne(() => ItemBaseEntity)
+  @ManyToOne(() => ItemBaseEntity, (ib) => ib.produtos)
   @JoinColumn({ name: 'item_base_id' })
   itemBase: ItemBaseEntity;
 

@@ -54,6 +54,16 @@ export class ItemBaseRepo {
     await tRepo.delete({ id });
   }
 
+  async getQtdProdutos(itemId: number): Promise<number | undefined> {
+    return await this.repo
+      .createQueryBuilder('ib')
+      .select('COUNT(DISTINCT p.id)', 'count')
+      .leftJoin('ib.produtos', 'p', 'p.desativadoEm IS NULL')
+      .where('ib.id = :id', { id: itemId })
+      .groupBy('ib.id')
+      .getRawOne();
+  }
+
   private buildWhere(
     qb: SelectQueryBuilder<ItemBaseEntity>,
     opt: IOptItemBase,

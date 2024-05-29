@@ -4,11 +4,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import 'dotenv/config';
 import { TipoItemBaseEntity } from 'src/tipo_item_base/tipo_item_base.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { ProdutoEntity } from 'src/produto/produto.entity';
 
 @ObjectType()
 @Entity('item_base', { schema: process.env.SCHEMA })
@@ -38,6 +40,9 @@ export class ItemBaseEntity {
   @ManyToOne(() => TipoItemBaseEntity)
   @JoinColumn({ name: 'tipo_item_base_id' })
   tipoItemBase: TipoItemBaseEntity;
+
+  @OneToMany(() => ProdutoEntity, (p) => p.itemBase)
+  produtos: ProdutoEntity[];
 
   constructor(partial: Partial<ItemBaseEntity>) {
     Object.assign(this, partial);
