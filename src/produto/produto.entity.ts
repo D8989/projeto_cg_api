@@ -62,7 +62,7 @@ export class ProdutoEntity {
   desativadoEm?: Date;
 
   @ApiProperty({ type: () => MarcaEntity })
-  @ManyToOne(() => MarcaEntity)
+  @ManyToOne(() => MarcaEntity, (marca) => marca.produtos)
   @JoinColumn({ name: 'marca_id' })
   marca: MarcaEntity;
 

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateMarcaInput } from './dto/create-marca.input';
 import { IUniqMarca } from './interface/uniq-marca.interface';
 import { MarcaRepo } from './marca.repo';
@@ -46,6 +50,19 @@ export class MarcaService {
     });
     if (!marca) {
       throw new NotFoundException('Marca não encontrada para a desaivação');
+    }
+
+    const qtdProdutos = await this.marcaRepo.getQtdProdutos(marca.id);
+    if (!qtdProdutos) {
+      throw new BadRequestException(
+        'Não foi possível definir se uma marca possui produtos cadastrados ou não',
+      );
+    }
+
+    if (qtdProdutos > 0) {
+      throw new BadRequestException(
+        'Não é possível deletar marca que tenha produtos cadastrados',
+      );
     }
     const now = new Date();
     marca.desativadoEm = now;
