@@ -1,8 +1,16 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBody,
   ApiCreatedResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -44,6 +52,21 @@ export class ProdutoController {
       opt.bringItemBase = true;
       opt.withBasicSelect = true;
       return await this.produtoService.listPaginado(opt);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Get('/:id')
+  @ApiOkResponse({
+    description: 'Retorno de um Produto',
+    type: () => ProdutoEntity,
+    isArray: false,
+  })
+  @ApiNotFoundResponse({ description: 'Produto informado não encontrado' })
+  async getTipo(@Param('id', ParseIntPipe) id: number) {
+    try {
+      return await this.produtoService.visualizarProduto(id);
     } catch (error) {
       throw error;
     }

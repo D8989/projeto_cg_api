@@ -51,6 +51,32 @@ export class ProdutoRepo extends ARepo<ProdutoEntity, IOptProduto> {
     return query.getManyAndCount();
   }
 
+  async findAll(opt: IOptProduto) {
+    const query = this.produtoRepo.createQueryBuilder('p');
+
+    this.buildCustomSelect(opt);
+
+    this.buildJoin(query, opt);
+    this.buildSelect(query, opt);
+    this.buildWhere(query, opt);
+    this.buildOrder(query, opt);
+
+    return query.getMany();
+  }
+
+  async findOne(opt: IOptProduto) {
+    const query = this.produtoRepo.createQueryBuilder('p');
+
+    this.buildCustomSelect(opt);
+
+    this.buildJoin(query, opt);
+    this.buildSelect(query, opt);
+    this.buildWhere(query, opt);
+    this.buildOrder(query, opt);
+
+    return query.getOne();
+  }
+
   protected override buildWhere(
     qb: SelectQueryBuilder<ProdutoEntity>,
     opt: IOptProduto,

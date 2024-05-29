@@ -1,6 +1,7 @@
 import {
   Args,
   Context,
+  Int,
   Mutation,
   Parent,
   Query,
@@ -50,6 +51,18 @@ export class ProdutoResolver {
       return this.produtoService
         .listPaginado(new ListProdutoOptionsDto(listOpt))
         .then((resp) => new ListProdutoDto(resp));
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Query(() => ProdutoEntity, { name: 'produto' })
+  async visualizeProduto(
+    @Args({ name: 'id', type: () => Int })
+    id: number,
+  ) {
+    try {
+      return this.produtoService.fetchProduto(id);
     } catch (error) {
       throw error;
     }

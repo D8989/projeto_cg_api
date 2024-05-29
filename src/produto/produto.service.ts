@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ProdutoRepo } from './produto.repo';
 import { ProdutoEntity } from './produto.entity';
 import { CreateProdutoInput } from './dto/create-produto.input';
@@ -62,6 +66,33 @@ export class ProdutoService {
       opt.limite = 100;
     }
     return await this.produtoRepo.findAllAndCount(opt.toIFindProduto());
+  }
+
+  async fetchProduto(id: number) {
+    const produto = await this.produtoRepo.findOne({
+      ids: [id],
+    });
+
+    if (!produto) {
+      throw new NotFoundException('Produto não encontrado');
+    }
+
+    return produto;
+  }
+
+  async visualizarProduto(id: number) {
+    const listOpt = new ListProdutoOptionsDto();
+    listOpt.ids = [id];
+    listOpt.bringMarca = true;
+    listOpt.bringItemBase = true;
+    listOpt.withBasicSelect = true;
+
+    const produto = await this.produtoRepo.findOne(listOpt.toIFindProduto());
+    if (!produto) {
+      throw new NotFoundException('Produto não encontrado');
+    }
+
+    return produto;
   }
 
   private checkDto(dto: CreateProdutoInput): RespBollClass {
