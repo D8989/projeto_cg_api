@@ -30,6 +30,10 @@ class BaseListProdutoOptionsDto extends ListOptionsDto {
   @IsOptional()
   itemBaseNome?: string;
 
+  selects?: string[];
+  bringMarca?: boolean;
+  bringItemBase?: boolean;
+
   constructor(partial?: Partial<BaseListProdutoOptionsDto>) {
     super(partial);
     Object.assign(this, partial);
@@ -38,8 +42,10 @@ class BaseListProdutoOptionsDto extends ListOptionsDto {
 
 @InputType()
 export class ListProdutoOptionsDto extends BaseListProdutoOptionsDto {
+  private basicSelect: string[];
   constructor(partial?: Partial<BaseListProdutoOptionsDto>) {
     super(partial);
+    this.basicSelect = ['id', 'nome', 'descricao', 'itemBaseId', 'marcaId'];
   }
   toIFindProduto(): IOptProduto {
     return {
@@ -54,6 +60,7 @@ export class ListProdutoOptionsDto extends BaseListProdutoOptionsDto {
       itemBaseNome: this.itemBaseNome
         ? { value: this.itemBaseNome, typeOperator: 'ilike' }
         : undefined,
+      select: this.selects || this.basicSelect,
     };
   }
 }

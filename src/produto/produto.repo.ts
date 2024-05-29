@@ -11,18 +11,21 @@ import { IOptProduto } from './interface/opt-produto.interface';
 import { ARepo } from 'src/common/classes/repo.abstract';
 import { RepoFunctions } from 'src/common/functions/repo-functions.class';
 import { ObjectFunctions } from 'src/common/functions/object-functions.class';
+import { ArrayFunctions } from 'src/common/functions/array-functions.class';
 
 @Injectable()
 export class ProdutoRepo extends ARepo<ProdutoEntity, IOptProduto> {
   private readonly mAlias: string;
   private readonly ibAlias: string;
+  private readonly tibAlias: string;
   constructor(
     @InjectRepository(ProdutoEntity)
     private produtoRepo: Repository<ProdutoEntity>,
   ) {
-    super(['m', 'ib']);
+    super(['m', 'ib', 'tib']);
     this.mAlias = 'm';
     this.ibAlias = 'ib';
+    this.tibAlias = 'tib';
   }
 
   async saveMany(produtos: ProdutoEntity[], ent?: EntityManager) {
@@ -36,6 +39,9 @@ export class ProdutoRepo extends ARepo<ProdutoEntity, IOptProduto> {
 
   async findAllAndCount(opt: IOptProduto) {
     const query = this.produtoRepo.createQueryBuilder('p');
+
+    this.buildCustomSelect(opt);
+
     this.buildJoin(query, opt);
     this.buildSelect(query, opt);
     this.buildWhere(query, opt);
@@ -114,6 +120,10 @@ export class ProdutoRepo extends ARepo<ProdutoEntity, IOptProduto> {
         qb.innerJoin(`${qb.alias}.itemBase`, this.ibAlias);
         break;
 
+      case this.tibAlias:
+        qb.innerJoin(`${this.ibAlias}.tipoItemBase`, this.tibAlias);
+        break;
+
       default:
         return false;
     }
@@ -125,7 +135,14 @@ export class ProdutoRepo extends ARepo<ProdutoEntity, IOptProduto> {
     qb: SelectQueryBuilder<ProdutoEntity>,
     opt: IOptProduto,
   ) {
-    const { buscaSimples, customSelect, marcaNome, itemBaseNome } = opt;
+    const {
+      buscaSimples,
+      customSelect,
+      marcaNome,
+      itemBaseNome,
+      bringMarca,
+      bringItemBase,
+    } = opt;
 
     if (buscaSimples && buscaSimples.length > 0) {
       this.joinAll(qb);
@@ -140,11 +157,72 @@ export class ProdutoRepo extends ARepo<ProdutoEntity, IOptProduto> {
         }
       }
 
-      if (marcaNome && !RepoFunctions.hasAlias(qb, this.mAlias)) {
+      if (
+        (marcaNome || bringMarca) &&
+        !RepoFunctions.hasAlias(qb, this.mAlias)
+      ) {
         qb.innerJoin(`${qb.alias}.marca`, this.mAlias);
       }
-      if (itemBaseNome && !RepoFunctions.hasAlias(qb, this.ibAlias)) {
+      if (
+        (itemBaseNome || bringItemBase) &&
+        !RepoFunctions.hasAlias(qb, this.ibAlias)
+      ) {
         qb.innerJoin(`${qb.alias}.itemBase`, this.ibAlias);
+      }
+    }
+  }
+
+  protected override buildSelect(
+    qb: SelectQueryBuilder<ProdutoEntity>,
+    opt: IOptProduto,
+  ) {
+    const { select, customSelect } = opt;
+
+    const columns = [
+      ...RepoFunctions.buildSimpleSelect(qb.alias, select),
+      ...RepoFunctions.buildCustomSelect(this.alias, customSelect),
+    ];
+
+    if (columns.length > 0) {
+      qb.select(columns);
+    }
+  }
+
+  protected override buildCustomSelect(opt: IOptProduto): void {
+    const { bringMarca, bringItemBase } = opt;
+    const joins = {
+      marca: false,
+      item: false,
+      tipoItem: false,
+    };
+    if (bringMarca || bringItemBase) {
+      opt.customSelect = opt.customSelect || {};
+      if (bringMarca) {
+        joins.marca = true;
+      }
+      if (bringItemBase) {
+        joins.item = true;
+        joins.tipoItem = true;
+      }
+
+      if (joins.marca) {
+        opt.customSelect[this.mAlias] = ArrayFunctions.uniqueArray(
+          opt.customSelect[this.mAlias] || [],
+          ['id', 'nome', 'descricao'],
+        );
+      }
+      if (joins.item) {
+        opt.customSelect[this.ibAlias] = ArrayFunctions.uniqueArray(
+          opt.customSelect[this.ibAlias] || [],
+          ['id', 'nome', 'descricao'],
+        );
+
+        if (joins.tipoItem) {
+          opt.customSelect[this.tibAlias] = ArrayFunctions.uniqueArray(
+            opt.customSelect[this.tibAlias] || [],
+            ['id', 'nome'],
+          );
+        }
       }
     }
   }

@@ -59,4 +59,5 @@ export abstract class ARepo<T extends LiteralObject, U extends IFindOpt> {
   ): boolean;
   protected abstract buildOrder(qb: SelectQueryBuilder<T>, opt: U): void;
   protected abstract buildWhere(qb: SelectQueryBuilder<T>, opt: U): void;
+  protected abstract buildCustomSelect(opt: U): void;
 }

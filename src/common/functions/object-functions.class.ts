@@ -48,4 +48,8 @@ export class ObjectFunctions {
     const keys = ObjectFunctions.getKeys(obj);
     return keys.filter((k) => validKeys.includes(k));
   }
+
+  static hasKey(obj: MyObject, key: string): boolean {
+    return this.getKeys(obj).includes(key);
+  }
 }

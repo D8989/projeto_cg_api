@@ -6,4 +6,6 @@ export interface IOptProduto extends IFindOpt {
   descricao?: IColumnStrOpt;
   marcaNome?: IColumnStrOpt;
   itemBaseNome?: IColumnStrOpt;
+  bringMarca?: boolean;
+  bringItemBase?: boolean;
 }
