@@ -3,6 +3,8 @@ import * as DataLoader from 'dataloader';
 import { ObjectFunctions } from 'src/common/functions/object-functions.class';
 import { ItemBaseEntity } from 'src/item_base/item_base.entity';
 import { ItemBaseService } from 'src/item_base/item_base.service';
+import { MarcaEntity } from 'src/marca/marca.entity';
+import { MarcaService } from 'src/marca/marca.service';
 import { TipoItemBaseEntity } from 'src/tipo_item_base/tipo_item_base.entity';
 import { TipoItemBaseService } from 'src/tipo_item_base/tipo_item_base.service';
 
@@ -11,6 +13,7 @@ export class LoaderService {
   constructor(
     private ibService: ItemBaseService,
     private tibService: TipoItemBaseService,
+    private mService: MarcaService,
   ) {}
 
   async createLoaderItemBase() {
@@ -26,6 +29,14 @@ export class LoaderService {
       const tibs = await this.tibService.findByIds([...ids]);
       const tibMap = ObjectFunctions.groupByKey(tibs, 'id');
       return ids.map((id) => tibMap[id]);
+    });
+  }
+
+  async createLoaderMarca() {
+    return new DataLoader<number, MarcaEntity>(async (ids) => {
+      const ms = await this.mService.findByIds([...ids]);
+      const mMap = ObjectFunctions.groupByKey(ms, 'id');
+      return ids.map((id) => mMap[id]);
     });
   }
 }

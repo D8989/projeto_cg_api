@@ -15,6 +15,8 @@ import { ListProdutoDto } from './dto/list-produto.dto';
 import { ListProdutoOptionsDto } from './dto/list-produto-options.dto';
 import { ItemBaseEntity } from 'src/item_base/item_base.entity';
 import { IbLoader } from 'src/loader/types/item-base-loader.type';
+import { MarcaEntity } from 'src/marca/marca.entity';
+import { MarcaLoader } from 'src/loader/types/marca-loader.type';
 
 @Resolver(() => ProdutoEntity)
 export class ProdutoResolver {
@@ -59,5 +61,13 @@ export class ProdutoResolver {
     @Context('ibLoader') ibLoader: IbLoader,
   ) {
     return await ibLoader.load(produto.itemBaseId);
+  }
+
+  @ResolveField('marca', () => MarcaEntity)
+  async getMarca(
+    @Parent() produto: ProdutoEntity,
+    @Context('mLoader') mLoader: MarcaLoader,
+  ) {
+    return await mLoader.load(produto.marcaId);
   }
 }

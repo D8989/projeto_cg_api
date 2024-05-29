@@ -22,6 +22,7 @@ import { LoaderService } from './loader/loader.service';
         context: () => ({
           tibLoader: service.createLoaderTipoItemBase(),
           ibLoader: service.createLoaderItemBase(),
+          mLoader: service.createLoaderMarca(),
         }),
       }),
       inject: [LoaderService],

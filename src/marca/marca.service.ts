@@ -90,4 +90,13 @@ export class MarcaService {
 
     return false;
   }
+
+  async findByIds(ids: number[]): Promise<MarcaEntity[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    return await this.marcaRepo.findMany({
+      ids,
+    });
+  }
 }
