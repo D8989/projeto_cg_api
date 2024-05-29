@@ -30,6 +30,7 @@ class BaseListProdutoOptionsDto extends ListOptionsDto {
   @IsOptional()
   itemBaseNome?: string;
 
+  withBasicSelect?: boolean;
   selects?: string[];
   bringMarca?: boolean;
   bringItemBase?: boolean;
@@ -60,7 +61,7 @@ export class ListProdutoOptionsDto extends BaseListProdutoOptionsDto {
       itemBaseNome: this.itemBaseNome
         ? { value: this.itemBaseNome, typeOperator: 'ilike' }
         : undefined,
-      select: this.selects || this.basicSelect,
+      select: this.withBasicSelect ? this.basicSelect : this.selects,
     };
   }
 }
