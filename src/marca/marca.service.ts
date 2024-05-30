@@ -116,4 +116,10 @@ export class MarcaService {
       ids,
     });
   }
+
+  async exits(id: number): Promise<boolean> {
+    return await this.marcaRepo
+      .findOne({ ids: [id] })
+      .then((resp) => (resp ? true : false));
+  }
 }

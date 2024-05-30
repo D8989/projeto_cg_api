@@ -81,7 +81,18 @@ export class ProdutoRepo extends ARepo<ProdutoEntity, IOptProduto> {
     qb: SelectQueryBuilder<ProdutoEntity>,
     opt: IOptProduto,
   ) {
-    const { buscaSimples, ids, nome, marcaNome, itemBaseNome } = opt;
+    const {
+      buscaSimples,
+      ignoredId,
+      ids,
+      nome,
+      marcaNome,
+      itemBaseNome,
+      nomeUnique,
+      marcaIds,
+      itemBaseIds,
+      quantidades,
+    } = opt;
     const alias = qb.alias;
 
     qb.where(`${alias}.desativadoEm IS NULL`);
@@ -100,6 +111,9 @@ export class ProdutoRepo extends ARepo<ProdutoEntity, IOptProduto> {
       if (ids && ids.length > 0) {
         qb.andWhere(`${alias}.id IN(:...ids)`, { ids });
       }
+      if (ignoredId) {
+        qb.andWhere(`${alias}.id <> :ignoredId`, { ignoredId });
+      }
       if (nome) {
         RepoFunctions.decomptIColumnStrOpt(qb, alias, 'nome', nome);
       }
@@ -113,6 +127,18 @@ export class ProdutoRepo extends ARepo<ProdutoEntity, IOptProduto> {
           'nome',
           itemBaseNome,
         );
+      }
+      if (nomeUnique && nomeUnique.length > 0) {
+        qb.andWhere(`${alias}.nomeUnique = :nomeUnique`, { nomeUnique });
+      }
+      if (marcaIds && marcaIds.length > 0) {
+        qb.andWhere(`${alias}.marcaId IN(:...marcaIds)`, { marcaIds });
+      }
+      if (itemBaseIds && itemBaseIds.length > 0) {
+        qb.andWhere(`${alias}.itemBaseId IN(:...itemBaseIds)`, { itemBaseIds });
+      }
+      if (quantidades && quantidades.length > 0) {
+        qb.andWhere(`${alias}.quantidade IN(:...quantidades)`, { quantidades });
       }
     }
   }

@@ -18,6 +18,7 @@ import { ItemBaseEntity } from 'src/item_base/item_base.entity';
 import { IbLoader } from 'src/loader/types/item-base-loader.type';
 import { MarcaEntity } from 'src/marca/marca.entity';
 import { MarcaLoader } from 'src/loader/types/marca-loader.type';
+import { UpdateProdutoInput } from './dto/update-produto.input';
 
 @Resolver(() => ProdutoEntity)
 export class ProdutoResolver {
@@ -33,6 +34,19 @@ export class ProdutoResolver {
   ) {
     try {
       return await this.produtoService.createProduto(createDto);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Mutation(() => ProdutoEntity, { name: 'updateProduto' })
+  async updateProduto(
+    @Args({ name: 'dto', type: () => UpdateProdutoInput })
+    updateDto: UpdateProdutoInput,
+  ) {
+    try {
+      const { id, ...dto } = updateDto;
+      return await this.produtoService.update(id, dto);
     } catch (error) {
       throw error;
     }

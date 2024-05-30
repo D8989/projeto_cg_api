@@ -12,6 +12,9 @@ import { MarcaService } from 'src/marca/marca.service';
 import { ItemBaseService } from 'src/item_base/item_base.service';
 import { StringFunctionsClass } from 'src/common/functions/string-functions.class';
 import { ListProdutoOptionsDto } from './dto/list-produto-options.dto';
+import { IUniqProduto } from './interface/uniq-produto.interface';
+import { PutProdutoDto } from './dto/put-produto.dto';
+import { ObjectFunctions } from 'src/common/functions/object-functions.class';
 
 @Injectable()
 export class ProdutoService {
@@ -51,6 +54,11 @@ export class ProdutoService {
       );
     }
 
+    const checkUnique = await this.checkUnique(dto);
+    if (!checkUnique.flag) {
+      throw new BadRequestException(checkUnique.message);
+    }
+
     return await this.produtoRepo.saveOne(
       new ProdutoEntity({
         ...dto,
@@ -59,6 +67,63 @@ export class ProdutoService {
         itemBase: itemBase,
       }),
     );
+  }
+
+  async update(id: number, dto: PutProdutoDto, ent?: EntityManager) {
+    const produto = await this.produtoRepo.findOne({ ids: [id] });
+    if (!produto) {
+      throw new BadRequestException('Produto não encontrado para edição');
+    }
+    const updateDto = ObjectFunctions.removeEmptyProperties(dto);
+    if (ObjectFunctions.isObjectEmpty(updateDto)) {
+      throw new BadRequestException(
+        'Nenhum dado foi informado para a edição de produto',
+      );
+    }
+    const checkDto = this.checkDto(updateDto);
+    if (!checkDto.flag) {
+      throw new BadRequestException(checkDto.message);
+    }
+
+    if (updateDto.marcaId) {
+      const marcaExists = await this.marcaService.exits(updateDto.marcaId);
+      if (!marcaExists) {
+        throw new BadRequestException(
+          'Marca informada não encontrada para a edição de produto.',
+        );
+      }
+    }
+
+    if (updateDto.itemBaseId) {
+      const itemExists = await this.itemBaseService.exits(updateDto.itemBaseId);
+      if (!itemExists) {
+        throw new BadRequestException(
+          'Item-base não encontrado para a edição de produto.',
+        );
+      }
+    }
+
+    const checkUnique = await this.checkUnique(
+      {
+        nome: updateDto.nome || produto.nome,
+        quantidade: updateDto.quantidade || produto.quantidade,
+        marcaId: updateDto.marcaId || produto.marcaId,
+        itemBaseId: updateDto.itemBaseId || produto.itemBaseId,
+      },
+      produto.id,
+    );
+    if (!checkUnique.flag) {
+      throw new BadRequestException(checkUnique.message);
+    }
+
+    const produtoEditado = new ProdutoEntity({
+      ...produto,
+      ...updateDto,
+      id: produto.id,
+      atualizadoEm: new Date(),
+    });
+
+    return await this.produtoRepo.saveOne(produtoEditado);
   }
 
   async listPaginado(opt: ListProdutoOptionsDto) {
@@ -95,14 +160,37 @@ export class ProdutoService {
     return produto;
   }
 
-  private checkDto(dto: CreateProdutoInput): RespBollClass {
-    if (dto.quantidade <= 0) {
+  private checkDto(dto: CreateProdutoInput | PutProdutoDto): RespBollClass {
+    if (dto.quantidade && dto.quantidade <= 0) {
       return { flag: false, message: 'Quantidade deve ser maior que zero' };
     }
-    if (!['Kg', 'g', 'ml', 'l'].includes(dto.gramatura)) {
+    if (dto.gramatura && !['Kg', 'g', 'ml', 'l'].includes(dto.gramatura)) {
       return {
         flag: false,
         message: `gramatura está com o valor inválido ${dto.gramatura}`,
+      };
+    }
+
+    return { flag: true, message: '' };
+  }
+
+  private async checkUnique(
+    uniqKeys: IUniqProduto,
+    ignoredId?: number,
+  ): Promise<RespBollClass> {
+    const produto = await this.produtoRepo.findOne({
+      select: ['id'],
+      ignoredId,
+      nomeUnique: StringFunctionsClass.toLowerUnaccent(uniqKeys.nome),
+      marcaIds: [uniqKeys.marcaId],
+      itemBaseIds: [uniqKeys.itemBaseId],
+      quantidades: [uniqKeys.quantidade],
+    });
+
+    if (produto) {
+      return {
+        flag: false,
+        message: `Já existe um produto com os dados informados no sistema.`,
       };
     }
 

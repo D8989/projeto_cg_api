@@ -8,4 +8,8 @@ export interface IOptProduto extends IFindOpt {
   itemBaseNome?: IColumnStrOpt;
   bringMarca?: boolean;
   bringItemBase?: boolean;
+  nomeUnique?: string;
+  marcaIds?: number[];
+  itemBaseIds?: number[];
+  quantidades?: number[];
 }

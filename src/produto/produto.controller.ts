@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Put,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -19,6 +20,7 @@ import { ProdutoEntity } from './produto.entity';
 import { CreateProdutoInput } from './dto/create-produto.input';
 import { ListProdutoDto } from './dto/list-produto.dto';
 import { ListProdutoOptionsDto } from './dto/list-produto-options.dto';
+import { PutProdutoDto } from './dto/put-produto.dto';
 
 @Controller('Produto')
 @ApiTags('produto')
@@ -67,6 +69,29 @@ export class ProdutoController {
   async getTipo(@Param('id', ParseIntPipe) id: number) {
     try {
       return await this.produtoService.visualizarProduto(id);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Put(':id')
+  @ApiOkResponse({
+    description: 'Produto alterado alterado com sucesso',
+    type: () => ProdutoEntity,
+  })
+  @ApiBadRequestResponse({
+    description: 'Erro das regras de alteração do produto',
+  })
+  async patchNome(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() putDto: PutProdutoDto,
+  ) {
+    try {
+      const p = await this.produtoService.update(id, putDto);
+      return new ProdutoEntity({
+        id: p.id,
+        nome: p.nome,
+      });
     } catch (error) {
       throw error;
     }

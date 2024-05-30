@@ -185,4 +185,10 @@ export class ItemBaseService {
       ids: ids,
     });
   }
+
+  async exits(id: number): Promise<boolean> {
+    return await this.itemBaseRepo
+      .findOne({ ids: [id] })
+      .then((resp) => (resp ? true : false));
+  }
 }
