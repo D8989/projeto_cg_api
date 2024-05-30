@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MarcaEntity } from './marca.entity';
-import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import {
+  Brackets,
+  EntityManager,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { IOptMarca } from './interface/opt-marca.interface';
 import { RepoFunctions } from 'src/common/functions/repo-functions.class';
 
@@ -51,8 +56,18 @@ export class MarcaRepo {
     return await tRepo.save(marca);
   }
 
+  async getQtdProdutos(marcaId: number): Promise<number | undefined> {
+    return await this.repo
+      .createQueryBuilder('m')
+      .select('COUNT(DISTINCT p.id)', 'count')
+      .leftJoin('m.produtos', 'p', 'p.desativadoEm IS NULL')
+      .where('m.id = :id', { id: marcaId })
+      .groupBy('m.id')
+      .getRawOne();
+  }
+
   private buildWhere(qb: SelectQueryBuilder<MarcaEntity>, opt: IOptMarca) {
-    const { ids, nome, nomeUnique, descricao, ignoredId } = opt;
+    const { ids, nome, nomeUnique, descricao, ignoredId, buscaSimples } = opt;
     const alias = qb.alias;
     qb.where(`${alias}.desativadoEm IS NULL`);
 
@@ -64,16 +79,28 @@ export class MarcaRepo {
       qb.andWhere(`${alias}.id <> :ignoredId`, { ignoredId });
     }
 
-    if (nomeUnique) {
-      qb.andWhere(`${alias}.nomeUnique = :nomeUnique`, { nomeUnique });
-    }
+    if (buscaSimples) {
+      qb.andWhere(
+        new Brackets((qbW) => {
+          qbW
+            .where(`${alias}.nomeUnique ILIKE UNACCENT(LOWER(:busca))`)
+            .orWhere(`${alias}.descricao ILIKE :busca`, {
+              busca: `%${buscaSimples}%`,
+            });
+        }),
+      );
+    } else {
+      if (nomeUnique) {
+        qb.andWhere(`${alias}.nomeUnique = :nomeUnique`, { nomeUnique });
+      }
 
-    if (nome) {
-      RepoFunctions.decomptIColumnStrOpt(qb, alias, 'nome', nome);
-    }
+      if (nome) {
+        RepoFunctions.decomptIColumnStrOpt(qb, alias, 'nome', nome);
+      }
 
-    if (descricao) {
-      RepoFunctions.decomptIColumnStrOpt(qb, alias, 'descricao', descricao);
+      if (descricao) {
+        RepoFunctions.decomptIColumnStrOpt(qb, alias, 'descricao', descricao);
+      }
     }
   }
 

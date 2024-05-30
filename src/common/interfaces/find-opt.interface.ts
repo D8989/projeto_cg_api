@@ -3,11 +3,12 @@
  */
 export interface IFindOpt {
   select?: string[];
-  customSelect?: string[];
+  customSelect?: MyObject;
   ids?: number[];
   ignoredId?: number;
   limite?: number;
   offset?: number;
   ordenarPor?: string;
   ordem?: 'ASC' | 'DESC';
+  buscaSimples?: string;
 }

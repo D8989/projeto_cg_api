@@ -2,15 +2,18 @@ import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { IsOptional, IsString } from 'class-validator';
 import { ListOptionsDto } from 'src/common/classes/list-options.dto';
 import { IOptMarca } from '../interface/opt-marca.interface';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 @InputType()
 class BaseListMarcaOptionsDto extends ListOptionsDto {
   @Field(() => String, { nullable: true })
+  @ApiPropertyOptional({ type: String })
   @IsString()
   @IsOptional()
   nome?: string;
 
   @Field(() => String, { nullable: true })
+  @ApiPropertyOptional({ type: String })
   @IsString()
   @IsOptional()
   descricao?: string;

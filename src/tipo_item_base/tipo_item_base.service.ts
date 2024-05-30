@@ -4,20 +4,17 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateTipoItemBaseInput } from './dto/create-tipo_item_base.input';
-import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
 import { TipoItemBaseEntity } from './tipo_item_base.entity';
 import { TipoItemBaseDto } from './dto/tipo-item-base.dto';
 import { StringFunctionsClass } from 'src/common/functions/string-functions.class';
 import { ObjectFunctions } from 'src/common/functions/object-functions.class';
 import { RespBollClass } from 'src/common/classes/resp-boll.class';
+import { TipoItemBaseRepo } from './tipo-item-base.repo';
+import { IOptTipoItemBase } from './interface/opt-tipo-item-base.interface';
 
 @Injectable()
 export class TipoItemBaseService {
-  constructor(
-    @InjectRepository(TipoItemBaseEntity)
-    private tipoItemBaseRepository: Repository<TipoItemBaseEntity>,
-  ) {}
+  constructor(private tipoItemBaseRepository: TipoItemBaseRepo) {}
 
   async create(createTipoItemBaseInput: CreateTipoItemBaseInput) {
     const { nome, descricao } = createTipoItemBaseInput;
@@ -27,25 +24,28 @@ export class TipoItemBaseService {
       throw new BadRequestException(check.message);
     }
 
-    return await this.tipoItemBaseRepository.save({
-      nome: nome,
-      nomeUnique: StringFunctionsClass.toLowerUnaccent(nome),
-      descricao: descricao || 'n/a',
+    return await this.tipoItemBaseRepository.save(
+      new TipoItemBaseEntity({
+        nome: nome,
+        nomeUnique: StringFunctionsClass.toLowerUnaccent(nome),
+        descricao: descricao || 'n/a',
+      }),
+    );
+  }
+
+  async findAll(opt?: IOptTipoItemBase) {
+    return await this.tipoItemBaseRepository.findMany({
+      ...opt,
+      ordenarPor: 'nome',
+      ordem: 'ASC',
     });
   }
 
-  async findAll() {
-    return await this.tipoItemBaseRepository.find({
-      order: {
-        nomeUnique: 'ASC',
-      },
-    });
-  }
-
-  async findOne(id: number) {
+  async findOne(id: number, opt?: IOptTipoItemBase) {
     return await this.tipoItemBaseRepository
       .findOne({
-        where: { id },
+        ...opt,
+        ids: [id],
       })
       .then((resp) => {
         if (!resp) {
@@ -56,12 +56,9 @@ export class TipoItemBaseService {
   }
 
   async findByNome(nome: string): Promise<TipoItemBaseEntity | null> {
-    return await this.tipoItemBaseRepository
-      .createQueryBuilder('tib')
-      .select('tib.id')
-      .where('UPPER(UNACCENT(tib.nome)) = UPPER(UNACCENT(:nome))')
-      .setParameters({ nome })
-      .getOne();
+    return await this.tipoItemBaseRepository.findOne({
+      nomeUnique: StringFunctionsClass.toLowerUnaccent(nome),
+    });
   }
 
   async update(id: number, dto: TipoItemBaseDto) {
@@ -97,7 +94,7 @@ export class TipoItemBaseService {
       throw new BadRequestException('Tipo não encontrado para remoção');
     }
 
-    await this.tipoItemBaseRepository.delete({ id: tipo.id });
+    await this.tipoItemBaseRepository.hardDelete(tipo.id);
   }
 
   async checkDuplicata(
@@ -109,10 +106,7 @@ export class TipoItemBaseService {
     message: string;
   }> {
     const { nome } = dto;
-    const query = this.tipoItemBaseRepository
-      .createQueryBuilder('tib')
-      .select('tib.id');
-    const replacements = {};
+    const opt: IOptTipoItemBase = {};
 
     if (type === 'create') {
       if (!nome) {
@@ -121,43 +115,45 @@ export class TipoItemBaseService {
           message: 'Nome não informado para criação do tipo item-base',
         };
       }
-      query.where('UPPER(UNACCENT(tib.nome)) = UPPER(UNACCENT(:nome))');
-      replacements['nome'] = nome;
-    } else {
-      if (!nome || nome.length === 0) {
-        return { flag: true, message: '' };
+      opt.nomeUnique = StringFunctionsClass.toLowerUnaccent(nome);
+    } else if (type === 'update') {
+      if (!nome) {
+        return { flag: true, message: `nome não será alterado` };
       }
 
-      query.where('UPPER(UNACCENT(tib.nome)) = UPPER(UNACCENT(:nome))');
-      replacements['nome'] = nome;
+      if (nome.length === 0) {
+        return {
+          flag: false,
+          message: 'O nome do tipo não pode ser uma string vazia',
+        };
+      }
+      opt.nomeUnique = StringFunctionsClass.toLowerUnaccent(nome);
 
       if (id) {
-        query.andWhere('tib.id <> :id');
-        replacements['id'] = id;
+        opt.ignoredId = id;
       }
+    } else {
+      throw new BadRequestException(`Tipo "${type}" desconhecido`);
     }
 
-    return await query
-      .setParameters(replacements)
-      .getOne()
-      .then((resp) => {
-        return resp
-          ? {
-              flag: false,
-              message: `O nome do tipo item-base "${nome}" já existe no sistema`,
-            }
-          : {
-              flag: true,
-              message: `Nome "${nome}" pode ser utilizado(${type})`,
-            };
-      });
+    return await this.tipoItemBaseRepository.findOne(opt).then((resp) => {
+      return resp
+        ? {
+            flag: false,
+            message: `O nome do tipo item-base "${nome}" já existe no sistema`,
+          }
+        : {
+            flag: true,
+            message: `Nome "${nome}" pode ser utilizado(${type})`,
+          };
+    });
   }
 
   async exist(id: number): Promise<RespBollClass> {
     return await this.tipoItemBaseRepository
       .findOne({
         select: ['id', 'nome'],
-        where: { id },
+        ids: [id],
       })
       .then(
         (resp) =>
@@ -173,8 +169,8 @@ export class TipoItemBaseService {
     if (ids.length === 0) {
       return [];
     }
-    return this.tipoItemBaseRepository.find({
-      where: { id: In(ids) },
+    return await this.tipoItemBaseRepository.findMany({
+      ids,
     });
   }
 }
