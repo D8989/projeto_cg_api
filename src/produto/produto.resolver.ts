@@ -19,6 +19,7 @@ import { IbLoader } from 'src/loader/types/item-base-loader.type';
 import { MarcaEntity } from 'src/marca/marca.entity';
 import { MarcaLoader } from 'src/loader/types/marca-loader.type';
 import { UpdateProdutoInput } from './dto/update-produto.input';
+import { RespMessageClass } from 'src/common/classes/resp-message.class';
 
 @Resolver(() => ProdutoEntity)
 export class ProdutoResolver {
@@ -39,14 +40,32 @@ export class ProdutoResolver {
     }
   }
 
-  @Mutation(() => ProdutoEntity, { name: 'updateProduto' })
+  @Mutation(() => RespMessageClass, { name: 'updateProduto' })
   async updateProduto(
     @Args({ name: 'dto', type: () => UpdateProdutoInput })
     updateDto: UpdateProdutoInput,
   ) {
     try {
       const { id, ...dto } = updateDto;
-      return await this.produtoService.update(id, dto);
+      await this.produtoService.update(id, dto);
+      return new RespMessageClass({
+        id,
+        message: 'Produto editado com sucesso',
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Mutation(() => RespMessageClass, { name: 'softDeleteProduto' })
+  async softDeleteProduto(@Args({ name: 'id', type: () => Int }) id: number) {
+    try {
+      await this.produtoService.softDelete(id);
+
+      return new RespMessageClass({
+        id,
+        message: 'Produto desativado com sucesso',
+      });
     } catch (error) {
       throw error;
     }

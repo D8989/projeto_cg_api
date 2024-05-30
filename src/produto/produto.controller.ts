@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -21,6 +22,7 @@ import { CreateProdutoInput } from './dto/create-produto.input';
 import { ListProdutoDto } from './dto/list-produto.dto';
 import { ListProdutoOptionsDto } from './dto/list-produto-options.dto';
 import { PutProdutoDto } from './dto/put-produto.dto';
+import { RespMessageClass } from 'src/common/classes/resp-message.class';
 
 @Controller('Produto')
 @ApiTags('produto')
@@ -77,7 +79,7 @@ export class ProdutoController {
   @Put(':id')
   @ApiOkResponse({
     description: 'Produto alterado alterado com sucesso',
-    type: () => ProdutoEntity,
+    type: () => RespMessageClass,
   })
   @ApiBadRequestResponse({
     description: 'Erro das regras de alteração do produto',
@@ -88,10 +90,22 @@ export class ProdutoController {
   ) {
     try {
       const p = await this.produtoService.update(id, putDto);
-      return new ProdutoEntity({
+      return new RespMessageClass({
         id: p.id,
-        nome: p.nome,
+        message: 'Produto atualizado com sucesso.',
       });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Delete(':id/soft-delete')
+  @ApiOkResponse({ description: 'produto removido com sucesso.' })
+  @ApiNotFoundResponse({ description: 'produto informado não existe.' })
+  async hardDeleteTipo(@Param('id', ParseIntPipe) id: number) {
+    try {
+      await this.produtoService.softDelete(id);
+      return { message: 'Produto removido com sucesso' };
     } catch (error) {
       throw error;
     }

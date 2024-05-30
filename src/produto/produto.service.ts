@@ -160,6 +160,22 @@ export class ProdutoService {
     return produto;
   }
 
+  async softDelete(id: number, ent?: EntityManager) {
+    const produto = await this.produtoRepo.findOne({
+      select: ['id'],
+      ids: [id],
+    });
+    if (!produto) {
+      throw new NotFoundException('produto não encontrado para a desativação');
+    }
+
+    const now = new Date();
+    produto.desativadoEm = now;
+    produto.atualizadoEm = now;
+
+    await this.produtoRepo.saveOne(produto);
+  }
+
   private checkDto(dto: CreateProdutoInput | PutProdutoDto): RespBollClass {
     if (dto.quantidade && dto.quantidade <= 0) {
       return { flag: false, message: 'Quantidade deve ser maior que zero' };
