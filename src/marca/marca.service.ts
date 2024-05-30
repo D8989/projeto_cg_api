@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateMarcaInput } from './dto/create-marca.input';
 import { IUniqMarca } from './interface/uniq-marca.interface';
 import { MarcaRepo } from './marca.repo';
@@ -47,6 +51,19 @@ export class MarcaService {
     if (!marca) {
       throw new NotFoundException('Marca não encontrada para a desaivação');
     }
+
+    const qtdProdutos = await this.marcaRepo.getQtdProdutos(marca.id);
+    if (!qtdProdutos) {
+      throw new BadRequestException(
+        'Não foi possível definir se uma marca possui produtos cadastrados ou não',
+      );
+    }
+
+    if (qtdProdutos > 0) {
+      throw new BadRequestException(
+        'Não é possível deletar marca que tenha produtos cadastrados',
+      );
+    }
     const now = new Date();
     marca.desativadoEm = now;
     marca.atualizadoEm = now;
@@ -54,13 +71,17 @@ export class MarcaService {
     return await this.marcaRepo.save(marca);
   }
 
-  async getMarca(id: number) {
-    return await this.marcaRepo.findOne({ ids: [id] }).then((resp) => {
+  async fetchMarca(id: number, opt?: IOptMarca) {
+    return await this.marcaRepo.findOne({ ...opt, ids: [id] }).then((resp) => {
       if (!resp) {
         throw new NotFoundException('Marca não encontrada para visualização');
       }
       return resp;
     });
+  }
+
+  async findMarca(id: number, opt?: IOptMarca) {
+    return await this.marcaRepo.findOne({ ...opt, ids: [id] });
   }
 
   private async isDuplicada(
@@ -85,5 +106,20 @@ export class MarcaService {
     }
 
     return false;
+  }
+
+  async findByIds(ids: number[]): Promise<MarcaEntity[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    return await this.marcaRepo.findMany({
+      ids,
+    });
+  }
+
+  async exits(id: number): Promise<boolean> {
+    return await this.marcaRepo
+      .findOne({ ids: [id] })
+      .then((resp) => (resp ? true : false));
   }
 }

@@ -63,7 +63,7 @@ export class MarcaResolver {
     id: number,
   ) {
     try {
-      return await this.marcaService.getMarca(id);
+      return await this.marcaService.fetchMarca(id);
     } catch (error) {
       throw error;
     }

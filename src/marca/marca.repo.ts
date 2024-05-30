@@ -56,6 +56,16 @@ export class MarcaRepo {
     return await tRepo.save(marca);
   }
 
+  async getQtdProdutos(marcaId: number): Promise<number | undefined> {
+    return await this.repo
+      .createQueryBuilder('m')
+      .select('COUNT(DISTINCT p.id)', 'count')
+      .leftJoin('m.produtos', 'p', 'p.desativadoEm IS NULL')
+      .where('m.id = :id', { id: marcaId })
+      .groupBy('m.id')
+      .getRawOne();
+  }
+
   private buildWhere(qb: SelectQueryBuilder<MarcaEntity>, opt: IOptMarca) {
     const { ids, nome, nomeUnique, descricao, ignoredId, buscaSimples } = opt;
     const alias = qb.alias;

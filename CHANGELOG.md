@@ -1,3 +1,12 @@
+# [0.2.0] - 2024-05-29
+## Required
+- BD v0.2.0
+## Added
+- Serviços de CRUD da entidade marca
+- Serviços de CRUD da entidade produto
+## Changed
+- Melhorias geral no código
+
 # [0.1.1] - 2024-05-14
 ## Added
 - Serviços em REST da entidade Tipo-item-base

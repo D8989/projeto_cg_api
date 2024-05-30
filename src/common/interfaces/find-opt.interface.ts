@@ -3,7 +3,7 @@
  */
 export interface IFindOpt {
   select?: string[];
-  customSelect?: string[];
+  customSelect?: MyObject;
   ids?: number[];
   ignoredId?: number;
   limite?: number;

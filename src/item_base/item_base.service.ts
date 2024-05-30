@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateItemBaseInput } from './dto/create-item_base.input';
 import { ItemBaseEntity } from './item_base.entity';
 import { TipoItemBaseService } from 'src/tipo_item_base/tipo_item_base.service';
@@ -8,6 +12,7 @@ import { RespBollClass } from 'src/common/classes/resp-boll.class';
 import { ListItemBaseOptionsInput } from './dto/list-item-base-options.input';
 import { ObjectFunctions } from 'src/common/functions/object-functions.class';
 import { ItemBaseRepo } from './item-base.repo';
+import { IOptItemBase } from './interface/opt-item-base.interface';
 
 @Injectable()
 export class ItemBaseService {
@@ -20,7 +25,7 @@ export class ItemBaseService {
     const { tipoItemBaseId, nome, descricao } = createItemBaseInput;
 
     await Promise.all([
-      this.checkDuplicada(createItemBaseInput),
+      this.checkDuplicada(createItemBaseInput, 'create'),
       this.tipoItemBaseService.exist(tipoItemBaseId),
     ]).then((resps) => {
       for (const resp of resps) {
@@ -41,20 +46,30 @@ export class ItemBaseService {
   }
 
   async findAll(opt: ListItemBaseOptionsInput) {
+    opt.limite = undefined;
+    opt.offset = undefined;
     return this.itemBaseRepo.findMany(opt.toIItemBase());
   }
 
-  async findOne(id: number) {
-    return await this.itemBaseRepo.findOne({ ids: [id] });
+  async findOne(id: number, opt?: IOptItemBase) {
+    return await this.itemBaseRepo.findOne({
+      ...opt,
+      ids: [id],
+    });
   }
 
-  async fetchOne(id: number) {
-    return await this.itemBaseRepo.findOne({ ids: [id] }).then((resp) => {
-      if (!resp) {
-        throw new BadRequestException('Item-base não encontrado');
-      }
-      return resp;
-    });
+  async fetchOne(id: number, opt?: IOptItemBase) {
+    return await this.itemBaseRepo
+      .findOne({
+        ...opt,
+        ids: [id],
+      })
+      .then((resp) => {
+        if (!resp) {
+          throw new NotFoundException('Item-base não encontrado');
+        }
+        return resp;
+      });
   }
 
   async update(id: number, dto: ItemBaseDto) {
@@ -69,7 +84,7 @@ export class ItemBaseService {
     }
 
     await Promise.all([
-      this.checkDuplicada(dto, item.id),
+      this.checkDuplicada(dto, 'update', item.id),
       itemDto.tipoItemBaseId
         ? this.tipoItemBaseService.exist(itemDto.tipoItemBaseId)
         : { flag: true, message: '' },
@@ -101,23 +116,55 @@ export class ItemBaseService {
       throw new BadRequestException('item-base não encontrado para remoção');
     }
 
+    const qtdProdutos = await this.itemBaseRepo.getQtdProdutos(item.id);
+    if (!qtdProdutos) {
+      throw new BadRequestException(
+        'Não possível definir se o item tem produtos cadastrados',
+      );
+    }
+
+    if (qtdProdutos > 0) {
+      throw new BadRequestException(
+        'Não é possível desativar item-base com produto cadastrado',
+      );
+    }
+
     await this.itemBaseRepo.hardDelete(id);
     return item;
   }
 
   async checkDuplicada(
     dto: ItemBaseDto,
+    type: 'create' | 'update',
     ignoredId?: number,
   ): Promise<RespBollClass> {
     const { nome } = dto;
-    if (!nome) {
-      throw new BadRequestException('Nome do item-base não informado');
-    }
-    const itemFound = await this.itemBaseRepo.findOne({
+    const opt: IOptItemBase = {
       select: ['id'],
-      nomeUnique: StringFunctionsClass.toLowerUnaccent(nome),
-      ignoredId: ignoredId,
-    });
+    };
+
+    if (type === 'create') {
+      if (!nome) {
+        return { flag: false, message: 'Nome do item-base não informado' };
+      }
+    } else if (type === 'update') {
+      if (!nome) {
+        return { flag: true, message: 'Não alterará o campo único' };
+      }
+      if (!ignoredId) {
+        return {
+          flag: false,
+          message: 'Id do item editado não informado para validar duplicada',
+        };
+      }
+
+      opt.ignoredId = ignoredId;
+    } else {
+      return { flag: false, message: `Tipo ${type} desconhecido` };
+    }
+
+    opt.nomeUnique = StringFunctionsClass.toLowerUnaccent(nome);
+    const itemFound = await this.itemBaseRepo.findOne(opt);
 
     return itemFound
       ? {
@@ -128,5 +175,20 @@ export class ItemBaseService {
           flag: true,
           message: `Nome "${nome}" pode ser usado`,
         };
+  }
+
+  async findByIds(ids: number[]): Promise<ItemBaseEntity[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    return await this.itemBaseRepo.findMany({
+      ids: ids,
+    });
+  }
+
+  async exits(id: number): Promise<boolean> {
+    return await this.itemBaseRepo
+      .findOne({ ids: [id] })
+      .then((resp) => (resp ? true : false));
   }
 }
