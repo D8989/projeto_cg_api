@@ -33,7 +33,9 @@ export class TipoItemBaseController {
   })
   async listTipos() {
     try {
-      return await this.tipoItemBaseService.findAll();
+      return await this.tipoItemBaseService.findAll({
+        select: ['id', 'nome', 'descricao'],
+      });
     } catch (error) {
       throw error;
     }
@@ -48,7 +50,9 @@ export class TipoItemBaseController {
   @ApiNotFoundResponse({ description: 'Tipo informado não encontrado' })
   async getTipo(@Param('id', ParseIntPipe) id: number) {
     try {
-      return await this.tipoItemBaseService.findOne(id);
+      return await this.tipoItemBaseService.findOne(id, {
+        select: ['id', 'nome', 'descricao'],
+      });
     } catch (error) {
       throw error;
     }

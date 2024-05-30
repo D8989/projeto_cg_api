@@ -4,9 +4,9 @@ import {
   Mutation,
   Args,
   Int,
-  ResolveProperty,
   Parent,
   Context,
+  ResolveField,
 } from '@nestjs/graphql';
 import { ItemBaseService } from './item_base.service';
 import { ItemBaseEntity } from './item_base.entity';
@@ -15,7 +15,7 @@ import { UpdateItemBaseInput } from './dto/update-item_base.input';
 import { DataSource } from 'typeorm';
 import { ListItemBaseOptionsInput } from './dto/list-item-base-options.input';
 import { TipoItemBaseEntity } from 'src/tipo_item_base/tipo_item_base.entity';
-import { TibLoader } from 'src/tipo_item_base/tipo_item_base.loader';
+import { TibLoader } from 'src/loader/types/tipo-item-base-loader.type';
 import { RespMessageClass } from 'src/common/classes/resp-message.class';
 
 @Resolver(() => ItemBaseEntity)
@@ -42,7 +42,9 @@ export class ItemBaseResolver {
     })
     options?: ListItemBaseOptionsInput,
   ) {
-    return await this.itemBaseService.findAll(options);
+    return await this.itemBaseService.findAll(
+      new ListItemBaseOptionsInput(options),
+    );
   }
 
   @Query(() => ItemBaseEntity, { name: 'itemBase' })
@@ -66,7 +68,7 @@ export class ItemBaseResolver {
     });
   }
 
-  @ResolveProperty('tipoItemBase', () => TipoItemBaseEntity)
+  @ResolveField('tipoItemBase', () => TipoItemBaseEntity)
   async getTiposBase(
     @Parent() ib: ItemBaseEntity,
     @Context('tibLoader') tibLoader: TibLoader,

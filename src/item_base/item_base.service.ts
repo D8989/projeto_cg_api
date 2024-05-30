@@ -1,22 +1,23 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateItemBaseInput } from './dto/create-item_base.input';
-import { UpdateItemBaseInput } from './dto/update-item_base.input';
-import { InjectRepository } from '@nestjs/typeorm';
 import { ItemBaseEntity } from './item_base.entity';
-import { Brackets, ILike, In, Repository } from 'typeorm';
 import { TipoItemBaseService } from 'src/tipo_item_base/tipo_item_base.service';
 import { StringFunctionsClass } from 'src/common/functions/string-functions.class';
 import { ItemBaseDto } from './dto/item-base.dto';
 import { RespBollClass } from 'src/common/classes/resp-boll.class';
 import { ListItemBaseOptionsInput } from './dto/list-item-base-options.input';
 import { ObjectFunctions } from 'src/common/functions/object-functions.class';
-import { NotFoundError } from 'rxjs';
+import { ItemBaseRepo } from './item-base.repo';
+import { IOptItemBase } from './interface/opt-item-base.interface';
 
 @Injectable()
 export class ItemBaseService {
   constructor(
-    @InjectRepository(ItemBaseEntity)
-    private itemBaseRepo: Repository<ItemBaseEntity>,
+    private itemBaseRepo: ItemBaseRepo,
     private tipoItemBaseService: TipoItemBaseService,
   ) {}
 
@@ -24,7 +25,7 @@ export class ItemBaseService {
     const { tipoItemBaseId, nome, descricao } = createItemBaseInput;
 
     await Promise.all([
-      this.checkDuplicada(createItemBaseInput),
+      this.checkDuplicada(createItemBaseInput, 'create'),
       this.tipoItemBaseService.exist(tipoItemBaseId),
     ]).then((resps) => {
       for (const resp of resps) {
@@ -44,56 +45,28 @@ export class ItemBaseService {
     return await this.itemBaseRepo.save(item);
   }
 
-  async findAll(opt?: ListItemBaseOptionsInput) {
-    const query = this.itemBaseRepo.createQueryBuilder('ib');
-
-    if (opt && !ObjectFunctions.isObjectEmpty(opt)) {
-      if (opt.buscaSimples && opt.buscaSimples.length) {
-        query.innerJoin(`${query.alias}.tipoItemBase`, 'tib');
-        query.where(
-          new Brackets((qbW) => {
-            qbW
-              .where(`${query.alias}.nomeUnique ILIKE UNACCENT(LOWER(:busca))`)
-              .orWhere(`tib.nome ILIKE :busca`, {
-                busca: `%${opt.buscaSimples}%`,
-              });
-          }),
-        );
-      } else {
-        query.where('1=1');
-        if (opt.nome && opt.nome.length > 0) {
-          query.andWhere(
-            `${query.alias}.nomeUnique ILIKE UNACCENT(LOWER(:nome))`,
-            { nome: `%${opt.nome}%` },
-          );
-        }
-        if (opt.tipoItemBaseIds && opt.tipoItemBaseIds.length > 0) {
-          query.andWhere(`${query.alias}.tipoItemBaseId IN(:...tibIds)`, {
-            tibIds: opt.tipoItemBaseIds,
-          });
-        }
-      }
-    }
-
-    query.orderBy(`${query.alias}.nomeUnique`, 'ASC');
-
-    return await query.getMany();
+  async findAll(opt: ListItemBaseOptionsInput) {
+    opt.limite = undefined;
+    opt.offset = undefined;
+    return this.itemBaseRepo.findMany(opt.toIItemBase());
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, opt?: IOptItemBase) {
     return await this.itemBaseRepo.findOne({
-      where: { id },
+      ...opt,
+      ids: [id],
     });
   }
 
-  async fetchOne(id: number) {
+  async fetchOne(id: number, opt?: IOptItemBase) {
     return await this.itemBaseRepo
       .findOne({
-        where: { id },
+        ...opt,
+        ids: [id],
       })
       .then((resp) => {
         if (!resp) {
-          throw new BadRequestException('Item-base não encontrado');
+          throw new NotFoundException('Item-base não encontrado');
         }
         return resp;
       });
@@ -111,7 +84,7 @@ export class ItemBaseService {
     }
 
     await Promise.all([
-      this.checkDuplicada(dto, item.id),
+      this.checkDuplicada(dto, 'update', item.id),
       itemDto.tipoItemBaseId
         ? this.tipoItemBaseService.exist(itemDto.tipoItemBaseId)
         : { flag: true, message: '' },
@@ -143,39 +116,79 @@ export class ItemBaseService {
       throw new BadRequestException('item-base não encontrado para remoção');
     }
 
-    await this.itemBaseRepo.delete({ id });
+    const qtdProdutos = await this.itemBaseRepo.getQtdProdutos(item.id);
+    if (!qtdProdutos) {
+      throw new BadRequestException(
+        'Não possível definir se o item tem produtos cadastrados',
+      );
+    }
+
+    if (qtdProdutos > 0) {
+      throw new BadRequestException(
+        'Não é possível desativar item-base com produto cadastrado',
+      );
+    }
+
+    await this.itemBaseRepo.hardDelete(id);
     return item;
   }
 
   async checkDuplicada(
     dto: ItemBaseDto,
+    type: 'create' | 'update',
     ignoredId?: number,
   ): Promise<RespBollClass> {
     const { nome } = dto;
-    if (!nome) {
-      throw new BadRequestException('Nome do item-base não informado');
-    }
-    const query = this.itemBaseRepo
-      .createQueryBuilder('ib')
-      .select('ib.id')
-      .where('ib.nomeUnique = :nomeU', {
-        nomeU: StringFunctionsClass.toLowerUnaccent(nome),
-      });
+    const opt: IOptItemBase = {
+      select: ['id'],
+    };
 
-    if (ignoredId) {
-      query.andWhere('ib.id <> :ibId', { ibId: ignoredId });
+    if (type === 'create') {
+      if (!nome) {
+        return { flag: false, message: 'Nome do item-base não informado' };
+      }
+    } else if (type === 'update') {
+      if (!nome) {
+        return { flag: true, message: 'Não alterará o campo único' };
+      }
+      if (!ignoredId) {
+        return {
+          flag: false,
+          message: 'Id do item editado não informado para validar duplicada',
+        };
+      }
+
+      opt.ignoredId = ignoredId;
+    } else {
+      return { flag: false, message: `Tipo ${type} desconhecido` };
     }
 
-    return await query.getOne().then(
-      (resp) =>
-        new RespBollClass(
-          resp
-            ? {
-                flag: false,
-                message: `Já existe um item-base com o nome "${nome}" no sistema`,
-              }
-            : { flag: true, message: `Nome "${nome}" pode ser usado` },
-        ),
-    );
+    opt.nomeUnique = StringFunctionsClass.toLowerUnaccent(nome);
+    const itemFound = await this.itemBaseRepo.findOne(opt);
+
+    return itemFound
+      ? {
+          flag: false,
+          message: `Já existe um item-base com o nome "${nome}" no sistema`,
+        }
+      : {
+          flag: true,
+          message: `Nome "${nome}" pode ser usado`,
+        };
+  }
+
+  async findByIds(ids: number[]): Promise<ItemBaseEntity[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    return await this.itemBaseRepo.findMany({
+      ids: ids,
+    });
+  }
+
+  async exits(id: number): Promise<boolean> {
+    return await this.itemBaseRepo
+      .findOne({ ids: [id] })
+      .then((resp) => (resp ? true : false));
   }
 }
