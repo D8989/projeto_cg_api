@@ -54,6 +54,11 @@ export class ItemBaseRepo {
     await tRepo.delete({ id });
   }
 
+  async softDelete(id: number, now: Date, ent?: EntityManager) {
+    const tRepo = ent?.getRepository(ItemBaseEntity) || this.repo;
+    await tRepo.update({ id }, { desativadoEm: now, atualizadoEm: now });
+  }
+
   async getQtdProdutos(itemId: number): Promise<number | undefined> {
     return await this.repo
       .createQueryBuilder('ib')
@@ -79,7 +84,7 @@ export class ItemBaseRepo {
     } = opt;
     const alias = qb.alias;
 
-    qb.where(`1=1`);
+    qb.where(`${alias}.desativadoEm IS NULL`);
 
     if (ids && ids.length > 0) {
       qb.andWhere(`${alias}.id IN (:...ids)`, { ids });
