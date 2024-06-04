@@ -110,7 +110,7 @@ export class ItemBaseService {
     return item;
   }
 
-  async remove(id: number) {
+  async remove(id: number, hard = false) {
     const item = await this.findOne(id);
     if (!item) {
       throw new BadRequestException('item-base não encontrado para remoção');
@@ -129,7 +129,12 @@ export class ItemBaseService {
       );
     }
 
-    await this.itemBaseRepo.hardDelete(id);
+    if (hard) {
+      await this.itemBaseRepo.hardDelete(id);
+    } else {
+      await this.itemBaseRepo.softDelete(id, new Date());
+    }
+
     return item;
   }
 

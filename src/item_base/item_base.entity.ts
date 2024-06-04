@@ -36,6 +36,15 @@ export class ItemBaseEntity {
   @Column({ nullable: true })
   descricao?: string;
 
+  @Column('timestamptz', { name: 'criado_em' })
+  criadoEm: Date;
+
+  @Column({ name: 'atualizado_em', nullable: true })
+  atualizadoEm?: Date;
+
+  @Column('timestamptz', { name: 'desativado_em', nullable: true })
+  desativadoEm?: Date;
+
   @ApiProperty({ type: () => TipoItemBaseEntity })
   @ManyToOne(() => TipoItemBaseEntity)
   @JoinColumn({ name: 'tipo_item_base_id' })

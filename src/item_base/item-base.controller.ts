@@ -108,8 +108,20 @@ export class ItemBaseController {
   @ApiNotFoundResponse({ description: 'Item-base informado não existe.' })
   async hardDeleteTipo(@Param('id', ParseIntPipe) id: number) {
     try {
-      await this.itemBaseService.remove(id);
+      await this.itemBaseService.remove(id, true);
       return { message: 'Tipo item-base removido com sucesso' };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Delete(':id/soft-delete')
+  @ApiOkResponse({ description: 'Item-base desativado com sucesso.' })
+  @ApiNotFoundResponse({ description: 'Item-base informado não existe.' })
+  async softDeleteTipo(@Param('id', ParseIntPipe) id: number) {
+    try {
+      await this.itemBaseService.remove(id, false);
+      return { message: 'Tipo item-base desativado com sucesso' };
     } catch (error) {
       throw error;
     }
