@@ -13,6 +13,7 @@ import { ListItemBaseOptionsInput } from './dto/list-item-base-options.input';
 import { ObjectFunctions } from 'src/common/functions/object-functions.class';
 import { ItemBaseRepo } from './item-base.repo';
 import { IOptItemBase } from './interface/opt-item-base.interface';
+import { TipoItemBaseEntity } from 'src/tipo_item_base/tipo_item_base.entity';
 
 @Injectable()
 export class ItemBaseService {
@@ -195,5 +196,9 @@ export class ItemBaseService {
     return await this.itemBaseRepo
       .findOne({ ids: [id] })
       .then((resp) => (resp ? true : false));
+  }
+
+  async getTipo(item: ItemBaseEntity): Promise<TipoItemBaseEntity> {
+    return await this.tipoItemBaseService.findOne(item.tipoItemBaseId);
   }
 }
