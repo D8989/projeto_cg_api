@@ -15,9 +15,7 @@ import { DataSource } from 'typeorm';
 import { ListProdutoDto } from './dto/list-produto.dto';
 import { ListProdutoOptionsDto } from './dto/list-produto-options.dto';
 import { ItemBaseEntity } from 'src/item_base/item_base.entity';
-import { IbLoader } from 'src/loader/types/item-base-loader.type';
 import { MarcaEntity } from 'src/marca/marca.entity';
-import { MarcaLoader } from 'src/loader/types/marca-loader.type';
 import { UpdateProdutoInput } from './dto/update-produto.input';
 import { RespMessageClass } from 'src/common/classes/resp-message.class';
 
@@ -102,18 +100,12 @@ export class ProdutoResolver {
   }
 
   @ResolveField('itemBase', () => ItemBaseEntity)
-  async getItemBase(
-    @Parent() produto: ProdutoEntity,
-    @Context('ibLoader') ibLoader: IbLoader,
-  ) {
-    return await ibLoader.load(produto.itemBaseId);
+  async getItemBase(@Parent() produto: ProdutoEntity) {
+    return await this.produtoService.getItemBaseByLoader(produto);
   }
 
   @ResolveField('marca', () => MarcaEntity)
-  async getMarca(
-    @Parent() produto: ProdutoEntity,
-    @Context('mLoader') mLoader: MarcaLoader,
-  ) {
-    return await mLoader.load(produto.marcaId);
+  async getMarca(@Parent() produto: ProdutoEntity) {
+    return await this.produtoService.getMarcaByLoader(produto);
   }
 }

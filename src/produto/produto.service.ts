@@ -212,4 +212,23 @@ export class ProdutoService {
 
     return { flag: true, message: '' };
   }
+
+  async getMarcaByLoader(p: ProdutoEntity) {
+    const id = p.marcaId;
+    return await this.marcaService.findByLoader(id).then((resp) => {
+      if (!resp) {
+        return this.marcaService.getMarcaDesconhecida();
+      }
+      return resp;
+    });
+  }
+
+  async getItemBaseByLoader(p: ProdutoEntity) {
+    const id = p.itemBaseId;
+    return await this.itemBaseService.findByLoader(id).then((resp) => {
+      if (!resp) {
+      }
+      return resp;
+    });
+  }
 }
