@@ -21,6 +21,7 @@ import { ItemBaseEntity } from './item_base.entity';
 import { ListItemBaseOptionsInput } from './dto/list-item-base-options.input';
 import { CreateItemBaseInput } from './dto/create-item_base.input';
 import { PutItemBaseDto } from './dto/put-item-base.dto';
+import { TipoItemBaseEntity } from 'src/tipo_item_base/tipo_item_base.entity';
 
 @Controller('item-base')
 @ApiTags('Item-base')
@@ -69,10 +70,16 @@ export class ItemBaseController {
   async createTipo(@Body() createTipoDto: CreateItemBaseInput) {
     try {
       const item = await this.itemBaseService.create(createTipoDto);
+      const tipo = await this.itemBaseService.getTipo(item);
       return new ItemBaseEntity({
         id: item.id,
         nome: item.nome,
         descricao: item.descricao,
+        tipoItemBase: new TipoItemBaseEntity({
+          id: tipo.id,
+          nome: tipo.nome,
+          descricao: tipo.descricao,
+        }),
       });
     } catch (error) {
       throw error;
@@ -93,10 +100,16 @@ export class ItemBaseController {
   ) {
     try {
       const item = await this.itemBaseService.update(id, putDto);
+      const tipo = await this.itemBaseService.getTipo(item);
       return new ItemBaseEntity({
         id: item.id,
         nome: item.nome,
         descricao: item.descricao,
+        tipoItemBase: new TipoItemBaseEntity({
+          id: tipo.id,
+          nome: tipo.nome,
+          descricao: tipo.descricao,
+        }),
       });
     } catch (error) {
       throw error;
