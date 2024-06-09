@@ -2,6 +2,9 @@
 ## Chored
 * Alteração do Dataloader. Agora utiliza a classe con função estática para criar o loaders.
 * Melhoria na função buildSelect da entidade Produto
+## Fixed
+* Acerto na listagem de marca
+* Acerto na validação da quantidade de produtos ao desativar uma marca
 
 # [0.2.2] - 2024-06-06
 ## Fixed
