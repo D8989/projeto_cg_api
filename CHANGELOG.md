@@ -1,3 +1,19 @@
+# [0.2.3] - 2024-06-07
+## Chored
+* Alteração do Dataloader. Agora utiliza a classe con função estática para criar o loaders.
+* Melhoria na função buildSelect da entidade Produto
+## Fixed
+* Acerto na listagem de marca
+* Acerto na validação da quantidade de produtos ao desativar uma marca
+
+# [0.2.2] - 2024-06-06
+## Fixed
+* retorna o tipo-item-base nos serviços de editar/criar o item-base
+
+# [0.2.1] - 2024-06-04
+## Added
+* nove serviço REST para fazer soft-delete em item-base
+
 # [0.2.0] - 2024-05-29
 ## Required
 - BD v0.2.0

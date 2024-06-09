@@ -21,7 +21,7 @@ async function bootstrap() {
   const configSwagger = new DocumentBuilder()
     .setTitle('API Controle Compras')
     .setDescription('API para manipular os dados das compras')
-    .setVersion('0.2.0')
+    .setVersion('0.2.3')
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);
   SwaggerModule.setup('api', app, document);

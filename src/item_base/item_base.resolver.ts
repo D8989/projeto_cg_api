@@ -15,7 +15,6 @@ import { UpdateItemBaseInput } from './dto/update-item_base.input';
 import { DataSource } from 'typeorm';
 import { ListItemBaseOptionsInput } from './dto/list-item-base-options.input';
 import { TipoItemBaseEntity } from 'src/tipo_item_base/tipo_item_base.entity';
-import { TibLoader } from 'src/loader/types/tipo-item-base-loader.type';
 import { RespMessageClass } from 'src/common/classes/resp-message.class';
 
 @Resolver(() => ItemBaseEntity)
@@ -71,8 +70,10 @@ export class ItemBaseResolver {
   @ResolveField('tipoItemBase', () => TipoItemBaseEntity)
   async getTiposBase(
     @Parent() ib: ItemBaseEntity,
-    @Context('tibLoader') tibLoader: TibLoader,
+    // @Context('tibLoader') tibLoader: TibLoader,
   ) {
-    return await tibLoader.load(ib.tipoItemBaseId);
+    // return await tibLoader.load(ib.tipoItemBaseId);
+    return await this.itemBaseService.getTipoByLoader(ib);
+    // return await this.itemBaseService.getTipo(ib);
   }
 }

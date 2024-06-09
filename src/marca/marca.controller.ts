@@ -57,8 +57,10 @@ export class MarcaController {
   @ApiBody({ required: false, type: () => ListMarcaOptionsDto })
   async listTipos(@Body() listOpt?: ListMarcaOptionsDto) {
     try {
-      return await this.marcaService.getMarcasPaginada(
-        new ListMarcaOptionsDto(listOpt),
+      return new ListMarcaDto(
+        await this.marcaService.getMarcasPaginada(
+          new ListMarcaOptionsDto(listOpt),
+        ),
       );
     } catch (error) {
       throw error;

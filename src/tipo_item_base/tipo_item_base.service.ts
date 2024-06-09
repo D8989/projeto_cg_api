@@ -11,10 +11,17 @@ import { ObjectFunctions } from 'src/common/functions/object-functions.class';
 import { RespBollClass } from 'src/common/classes/resp-boll.class';
 import { TipoItemBaseRepo } from './tipo-item-base.repo';
 import { IOptTipoItemBase } from './interface/opt-tipo-item-base.interface';
+import { TypeLoader } from 'src/common/types/loader.type';
+import { LoaderFactory } from 'src/common/functions/loader-factory.class';
 
 @Injectable()
 export class TipoItemBaseService {
-  constructor(private tipoItemBaseRepository: TipoItemBaseRepo) {}
+  private loader: TypeLoader<TipoItemBaseEntity>;
+  constructor(private tipoItemBaseRepository: TipoItemBaseRepo) {
+    this.loader = LoaderFactory.createLoader((ids: number[]) =>
+      this.findByIds(ids),
+    );
+  }
 
   async create(createTipoItemBaseInput: CreateTipoItemBaseInput) {
     const { nome, descricao } = createTipoItemBaseInput;
@@ -85,7 +92,10 @@ export class TipoItemBaseService {
     }
     tipo.descricao = dto.descricao || 'n/a';
 
-    return await this.tipoItemBaseRepository.save(tipo);
+    return await this.tipoItemBaseRepository.save(tipo).then((resp) => {
+      this.clearLoaders([resp.id]);
+      return resp;
+    });
   }
 
   async hardDelete(id: number): Promise<void> {
@@ -95,6 +105,7 @@ export class TipoItemBaseService {
     }
 
     await this.tipoItemBaseRepository.hardDelete(tipo.id);
+    this.clearLoaders([tipo.id]);
   }
 
   async checkDuplicata(
@@ -172,5 +183,24 @@ export class TipoItemBaseService {
     return await this.tipoItemBaseRepository.findMany({
       ids,
     });
+  }
+
+  async findByLoader(id: number) {
+    return this.loader.load(id);
+  }
+
+  async getTipoDesconhecido() {
+    return new TipoItemBaseEntity({
+      id: 0,
+      nome: 'Desconhecido',
+      descricao: '-',
+      nomeUnique: 'desconhecido',
+    });
+  }
+
+  private clearLoaders(ids: number[]) {
+    for (const id of ids) {
+      this.loader.clear(id);
+    }
   }
 }

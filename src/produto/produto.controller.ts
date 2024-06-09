@@ -24,8 +24,8 @@ import { ListProdutoOptionsDto } from './dto/list-produto-options.dto';
 import { PutProdutoDto } from './dto/put-produto.dto';
 import { RespMessageClass } from 'src/common/classes/resp-message.class';
 
-@Controller('Produto')
-@ApiTags('produto')
+@Controller('produto')
+@ApiTags('Produto')
 export class ProdutoController {
   constructor(private produtoService: ProdutoService) {}
 
@@ -55,7 +55,7 @@ export class ProdutoController {
       opt.bringMarca = true;
       opt.bringItemBase = true;
       opt.withBasicSelect = true;
-      return await this.produtoService.listPaginado(opt);
+      return new ListProdutoDto(await this.produtoService.listPaginado(opt));
     } catch (error) {
       throw error;
     }
