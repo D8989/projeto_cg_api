@@ -60,7 +60,7 @@ export class MarcaService {
     }
 
     const qtdProdutos = await this.marcaRepo.getQtdProdutos(marca.id);
-    if (!qtdProdutos) {
+    if (typeof qtdProdutos === 'undefined') {
       throw new BadRequestException(
         'Não foi possível definir se uma marca possui produtos cadastrados ou não',
       );
