@@ -14,13 +14,20 @@ import { ObjectFunctions } from 'src/common/functions/object-functions.class';
 import { ItemBaseRepo } from './item-base.repo';
 import { IOptItemBase } from './interface/opt-item-base.interface';
 import { TipoItemBaseEntity } from 'src/tipo_item_base/tipo_item_base.entity';
+import { TypeLoader } from 'src/common/types/loader.type';
+import { LoaderFactory } from 'src/common/functions/loader-factory.class';
 
 @Injectable()
 export class ItemBaseService {
+  private loader: TypeLoader<ItemBaseEntity>;
   constructor(
     private itemBaseRepo: ItemBaseRepo,
     private tipoItemBaseService: TipoItemBaseService,
-  ) {}
+  ) {
+    this.loader = LoaderFactory.createLoader((ids: number[]) =>
+      this.findByIds(ids),
+    );
+  }
 
   async create(createItemBaseInput: CreateItemBaseInput) {
     const { tipoItemBaseId, nome, descricao } = createItemBaseInput;
@@ -107,6 +114,7 @@ export class ItemBaseService {
     item.descricao = dto.descricao || 'n/a';
 
     await this.itemBaseRepo.save(item);
+    this.clearLoaders([item.id]);
 
     return item;
   }
@@ -136,6 +144,7 @@ export class ItemBaseService {
       await this.itemBaseRepo.softDelete(id, new Date());
     }
 
+    this.clearLoaders([id]);
     return item;
   }
 
@@ -200,5 +209,32 @@ export class ItemBaseService {
 
   async getTipo(item: ItemBaseEntity): Promise<TipoItemBaseEntity> {
     return await this.tipoItemBaseService.findOne(item.tipoItemBaseId);
+  }
+
+  async findByLoader(id: number) {
+    return await this.loader.load(id);
+  }
+
+  async getTipoByLoader(item: ItemBaseEntity | number) {
+    const id = typeof item === 'number' ? item : item.tipoItemBaseId;
+    return await this.tipoItemBaseService.findByLoader(id).then((tipo) => {
+      if (!tipo) {
+        return this.tipoItemBaseService.getTipoDesconhecido();
+      }
+      return tipo;
+    });
+  }
+
+  getItemDesconhecido() {
+    return new ItemBaseEntity({
+      id: 0,
+      nome: 'Desconhedido',
+    });
+  }
+
+  private clearLoaders(ids: number[]) {
+    for (const id of ids) {
+      this.loader.clear(id);
+    }
   }
 }

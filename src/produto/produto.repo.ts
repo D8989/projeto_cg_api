@@ -230,13 +230,17 @@ export class ProdutoRepo extends ARepo<ProdutoEntity, IOptProduto> {
   ) {
     const { select, customSelect } = opt;
 
-    const columns = [
-      ...RepoFunctions.buildSimpleSelect(qb.alias, select),
-      ...RepoFunctions.buildCustomSelect(this.alias, customSelect),
-    ];
+    const selectColumns = RepoFunctions.buildSimpleSelect(qb.alias, select);
+    const customColumns = RepoFunctions.buildCustomSelect(
+      this.alias,
+      customSelect,
+    );
 
-    if (columns.length > 0) {
-      qb.select(columns);
+    if (selectColumns.length > 0) {
+      qb.select(selectColumns);
+    }
+    if (customColumns.length > 0) {
+      qb.addSelect(customColumns);
     }
   }
 

@@ -11,10 +11,17 @@ import { MarcaEntity } from './marca.entity';
 import { StringFunctionsClass } from 'src/common/functions/string-functions.class';
 import { ListMarcaOptionsDto } from './dto/list-marca-options.dto';
 import { DeactivateMarcaInput } from './dto/deactivate-marca.input';
+import { TypeLoader } from 'src/common/types/loader.type';
+import { LoaderFactory } from 'src/common/functions/loader-factory.class';
 
 @Injectable()
 export class MarcaService {
-  constructor(private marcaRepo: MarcaRepo) {}
+  private loader: TypeLoader<MarcaEntity>;
+  constructor(private marcaRepo: MarcaRepo) {
+    this.loader = LoaderFactory.createLoader((ids: number[]) =>
+      this.findByIds(ids),
+    );
+  }
 
   async createMarca(dto: CreateMarcaInput) {
     const { nome, descricao } = dto;
@@ -53,7 +60,7 @@ export class MarcaService {
     }
 
     const qtdProdutos = await this.marcaRepo.getQtdProdutos(marca.id);
-    if (!qtdProdutos) {
+    if (typeof qtdProdutos === 'undefined') {
       throw new BadRequestException(
         'Não foi possível definir se uma marca possui produtos cadastrados ou não',
       );
@@ -68,7 +75,10 @@ export class MarcaService {
     marca.desativadoEm = now;
     marca.atualizadoEm = now;
 
-    return await this.marcaRepo.save(marca);
+    return await this.marcaRepo.save(marca).then((resp) => {
+      this.clearLoaders([resp.id]);
+      return resp;
+    });
   }
 
   async fetchMarca(id: number, opt?: IOptMarca) {
@@ -97,10 +107,8 @@ export class MarcaService {
     if (ignoredId) {
       opt['ignoredId'] = ignoredId;
     }
+
     const marcaFound = await this.marcaRepo.findOne(opt);
-
-    console.log('FOUND: ', marcaFound);
-
     if (marcaFound) {
       return true;
     }
@@ -121,5 +129,22 @@ export class MarcaService {
     return await this.marcaRepo
       .findOne({ ids: [id] })
       .then((resp) => (resp ? true : false));
+  }
+
+  async findByLoader(id: number) {
+    return await this.loader.load(id);
+  }
+
+  getMarcaDesconhecida() {
+    return new MarcaEntity({
+      id: 0,
+      nome: 'Desconecido',
+    });
+  }
+
+  private clearLoaders(ids: number[]) {
+    ids.forEach((id) => {
+      this.loader.clear(id);
+    });
   }
 }

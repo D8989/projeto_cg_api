@@ -8,24 +8,15 @@ import { ConfigModule } from './config/config.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from './config/config.service';
 import { ProdutoModule } from './produto/produto.module';
-import { LoaderModule } from './loader/loader.module';
-import { LoaderService } from './loader/loader.service';
 
 @Module({
   imports: [
     GraphQLModule.forRootAsync<ApolloDriverConfig>({
-      imports: [LoaderModule],
       driver: ApolloDriver,
-      useFactory: (service: LoaderService) => ({
+      useFactory: () => ({
         playground: true,
         autoSchemaFile: 'schema.gql',
-        context: () => ({
-          tibLoader: service.createLoaderTipoItemBase(),
-          ibLoader: service.createLoaderItemBase(),
-          mLoader: service.createLoaderMarca(),
-        }),
       }),
-      inject: [LoaderService],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -45,7 +36,6 @@ import { LoaderService } from './loader/loader.service';
     }),
     ConfigModule,
     ProdutoModule,
-    LoaderModule,
   ],
   controllers: [AppController],
   providers: [AppService, AppResolver],

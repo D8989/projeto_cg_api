@@ -59,11 +59,12 @@ export class MarcaRepo {
   async getQtdProdutos(marcaId: number): Promise<number | undefined> {
     return await this.repo
       .createQueryBuilder('m')
-      .select('COUNT(DISTINCT p.id)', 'count')
+      .select('COUNT(DISTINCT p.id)::INTEGER', 'count')
       .leftJoin('m.produtos', 'p', 'p.desativadoEm IS NULL')
       .where('m.id = :id', { id: marcaId })
       .groupBy('m.id')
-      .getRawOne();
+      .getRawOne()
+      .then((resp) => resp.count);
   }
 
   private buildWhere(qb: SelectQueryBuilder<MarcaEntity>, opt: IOptMarca) {
