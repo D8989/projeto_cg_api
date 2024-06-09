@@ -55,7 +55,7 @@ export class ProdutoController {
       opt.bringMarca = true;
       opt.bringItemBase = true;
       opt.withBasicSelect = true;
-      return await this.produtoService.listPaginado(opt);
+      return new ListProdutoDto(await this.produtoService.listPaginado(opt));
     } catch (error) {
       throw error;
     }
