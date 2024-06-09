@@ -24,8 +24,8 @@ import { ListProdutoOptionsDto } from './dto/list-produto-options.dto';
 import { PutProdutoDto } from './dto/put-produto.dto';
 import { RespMessageClass } from 'src/common/classes/resp-message.class';
 
-@Controller('Produto')
-@ApiTags('produto')
+@Controller('produto')
+@ApiTags('Produto')
 export class ProdutoController {
   constructor(private produtoService: ProdutoService) {}
 
