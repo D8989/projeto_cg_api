@@ -1,6 +1,7 @@
 # [0.2.3] - 2024-06-07
 ## Chored
 * Alteração do Dataloader. Agora utiliza a classe con função estática para criar o loaders.
+* Melhoria na função buildSelect da entidade Produto
 
 # [0.2.2] - 2024-06-06
 ## Fixed
