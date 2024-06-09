@@ -46,7 +46,15 @@ export class ListProdutoOptionsDto extends BaseListProdutoOptionsDto {
   private basicSelect: string[];
   constructor(partial?: Partial<BaseListProdutoOptionsDto>) {
     super(partial);
-    this.basicSelect = ['id', 'nome', 'descricao', 'itemBaseId', 'marcaId'];
+    this.basicSelect = [
+      'id',
+      'nome',
+      'descricao',
+      'itemBaseId',
+      'marcaId',
+      'quantidade',
+      'gramatura',
+    ];
   }
   toIFindProduto(): IOptProduto {
     return {
