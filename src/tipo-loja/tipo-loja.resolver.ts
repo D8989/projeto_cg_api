@@ -56,7 +56,7 @@ export class TipoLojaResolver {
     }
   }
 
-  @Query(() => ListTipoLojaDto, { name: 'tipoLoja' })
+  @Query(() => TipoLojaEntity, { name: 'tipoLoja' })
   async visualizeTipoLoja(
     @Args({ name: 'id', type: () => Int })
     id: number,

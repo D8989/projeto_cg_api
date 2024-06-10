@@ -49,12 +49,18 @@ export class TipoLojaService {
   }
 
   async visualizarTipo(id: number) {
-    return await this.findById(id).then((tipo) => {
-      if (!tipo) {
-        throw new NotFoundException('Tipo não encontrado');
-      }
-      return tipo;
+    const listOpt = new ListTipoLojaOptionsDto({
+      ids: [id],
+      withBasicSelect: true,
     });
+    return await this.tipoLojaRepo
+      .findOne(listOpt.toIFindTipoLoja())
+      .then((tipo) => {
+        if (!tipo) {
+          throw new NotFoundException('Tipo não encontrado');
+        }
+        return tipo;
+      });
   }
 
   async create(input: CreateTipoLojaInput, ent?: EntityManager) {
