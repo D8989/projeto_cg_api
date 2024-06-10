@@ -36,13 +36,18 @@ export abstract class ARepo<T extends LiteralObject, U extends IFindOpt> {
 
   protected buildSelect(qb: SelectQueryBuilder<T>, opt: U) {
     const { select, customSelect } = opt;
-    const columns = [
-      ...RepoFunctions.buildSimpleSelect(qb.alias, select),
-      ...RepoFunctions.buildCustomSelect(this.alias, customSelect),
-    ];
 
-    if (columns.length > 0) {
-      qb.select(columns);
+    const selectColumns = RepoFunctions.buildSimpleSelect(qb.alias, select);
+    const customColumns = RepoFunctions.buildCustomSelect(
+      this.alias,
+      customSelect,
+    );
+
+    if (selectColumns.length > 0) {
+      qb.select(selectColumns);
+    }
+    if (customColumns.length > 0) {
+      qb.addSelect(customColumns);
     }
   }
 
