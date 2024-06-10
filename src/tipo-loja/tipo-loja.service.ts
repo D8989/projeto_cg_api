@@ -9,15 +9,21 @@ import { CreateTipoLojaInput } from './dto/create-tipo-loja.input';
 import { TipoLojaDto } from './dto/tipo-loja.dto';
 import { RespBollClass } from 'src/common/classes/resp-boll.class';
 import { StringFunctionsClass } from 'src/common/functions/string-functions.class';
-import { IOptTipoLoja } from './interfaces/opt-tipo-loja.interface';
 import { TipoLojaEntity } from './tipo-loja.entity';
 import { EntityManager } from 'typeorm';
 import { PutTipoLojaInput } from './dto/put-tipo-loja.input';
 import { ObjectFunctions } from 'src/common/functions/object-functions.class';
+import { TypeLoader } from 'src/common/types/loader.type';
+import { LoaderFactory } from 'src/common/functions/loader-factory.class';
 
 @Injectable()
 export class TipoLojaService {
-  constructor(private tipoLojaRepo: TipoLojaRepo) {}
+  private loader: TypeLoader<TipoLojaEntity>;
+  constructor(private tipoLojaRepo: TipoLojaRepo) {
+    this.loader = LoaderFactory.createLoader((ids: number[]) =>
+      this.findByIds(ids),
+    );
+  }
 
   async findPaginado(opt: ListTipoLojaOptionsDto) {
     if (!opt.limite) {
@@ -101,7 +107,10 @@ export class TipoLojaService {
     tipo.descricao = dto.descricao || 'n/a';
     tipo.atualizadoEm = new Date();
 
-    return await this.tipoLojaRepo.save(tipo, ent);
+    return await this.tipoLojaRepo.save(tipo, ent).then((resp) => {
+      this.loader.clear(resp.id);
+      return resp;
+    });
   }
 
   async checkDuplicada(
@@ -144,5 +153,9 @@ export class TipoLojaService {
     }
 
     return { flag: true, message: '' };
+  }
+
+  async findByLoader(id: number) {
+    return await this.loader.load(id);
   }
 }
