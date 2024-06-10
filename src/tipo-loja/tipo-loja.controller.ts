@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -14,6 +15,7 @@ import { ListTipoLojaOptionsDto } from './dto/list-tipo-loja-options.dto';
 import { TipoLojaEntity } from './tipo-loja.entity';
 import { CreateTipoLojaInput } from './dto/create-tipo-loja.input';
 import { PutTipoLojaInput } from './dto/put-tipo-loja.input';
+import { RespMessageClass } from 'src/common/classes/resp-message.class';
 
 @Controller('tipo-loja')
 @ApiTags('Tipo loja')
@@ -91,6 +93,24 @@ export class TipoLojaController {
   async getTipoLoja(@Param('id', ParseIntPipe) id: number) {
     try {
       return await this.tipoLojaService.visualizarTipo(id);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Delete('/:id/soft')
+  @ApiOkResponse({
+    isArray: false,
+    type: () => RespMessageClass,
+    description: 'Desativa uma entidade tipo-loja',
+  })
+  async desativarTipoLoja(@Param('id', ParseIntPipe) id: number) {
+    try {
+      await this.tipoLojaService.softDelete(id);
+      return new RespMessageClass({
+        id: id,
+        message: 'Tipo-loja desativada com sucesso',
+      });
     } catch (error) {
       throw error;
     }

@@ -5,6 +5,7 @@ import { ListTipoLojaDto } from './dto/list-tipo-loja.dto';
 import { ListTipoLojaOptionsDto } from './dto/list-tipo-loja-options.dto';
 import { CreateTipoLojaInput } from './dto/create-tipo-loja.input';
 import { UpdateTipoLojaInput } from './dto/update-tipo-loja.input';
+import { RespMessageClass } from 'src/common/classes/resp-message.class';
 
 @Resolver(() => TipoLojaEntity)
 export class TipoLojaResolver {
@@ -63,6 +64,19 @@ export class TipoLojaResolver {
   ) {
     try {
       return this.tipoLojaService.visualizarTipo(id);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Mutation(() => RespMessageClass, { name: 'deactivateTipoLoja' })
+  async deactivateTipoLoja(@Args({ name: 'id', type: () => Int }) id: number) {
+    try {
+      await this.tipoLojaService.softDelete(id);
+      return new RespMessageClass({
+        id: id,
+        message: 'Tipo-loja desativado com sucesso',
+      });
     } catch (error) {
       throw error;
     }

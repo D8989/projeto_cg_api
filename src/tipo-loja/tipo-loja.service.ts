@@ -164,4 +164,16 @@ export class TipoLojaService {
   async findByLoader(id: number) {
     return await this.loader.load(id);
   }
+
+  async softDelete(id: number, ent?: EntityManager) {
+    const tipo = await this.tipoLojaRepo.findOne({ ids: [id], select: ['id'] });
+    if (!tipo) {
+      throw new NotFoundException(
+        'Tipo-loja não encontrado para a desativação',
+      );
+    }
+
+    tipo.desativadoEm = new Date();
+    await this.tipoLojaRepo.save(tipo, ent);
+  }
 }
