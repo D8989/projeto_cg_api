@@ -32,4 +32,8 @@ export class TipoLojaEntity {
 
   @Column('timestamptz', { name: 'desativado_em', nullable: true })
   desativadoEm?: Date;
+
+  constructor(partial: Partial<TipoLojaEntity>) {
+    Object.assign(this, partial);
+  }
 }
