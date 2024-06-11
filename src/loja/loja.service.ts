@@ -9,6 +9,7 @@ import { TipoLojaService } from 'src/tipo-loja/tipo-loja.service';
 import { EntityManager } from 'typeorm';
 import { LojaEntity } from './loja.entity';
 import { EnderecoService } from 'src/endereco/endereco.service';
+import { EnderecoDto } from 'src/endereco/dto/endereco.dto';
 
 @Injectable()
 export class LojaService {
@@ -61,6 +62,7 @@ export class LojaService {
         nome: nome,
         nomeUnique: StringFunctionsClass.toLowerUnaccent(nome),
         apelido: apelido,
+        tipoLoja: tipoLoja,
       }),
     );
   }
@@ -105,5 +107,15 @@ export class LojaService {
     }
 
     return { flag: true, message: '' };
+  }
+
+  async getEndereco(loja: LojaEntity): Promise<EnderecoDto> {
+    return this.enderecoService.getEnderecoDto({
+      ...loja,
+    });
+  }
+
+  async getTipoLoja(loja: LojaEntity) {
+    return await this.tipoLojaService.findByLoader(loja.tipoLojaId);
   }
 }

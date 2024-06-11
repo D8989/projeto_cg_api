@@ -1,7 +1,14 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import 'dotenv/config';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { ApiProperty } from '@nestjs/swagger';
+import { TipoLojaEntity } from 'src/tipo-loja/tipo-loja.entity';
 
 @Entity('loja', { schema: process.env.SCHEMA })
 @ObjectType()
@@ -24,34 +31,25 @@ export class LojaEntity {
   @ApiProperty({ type: String })
   apelido: string;
 
+  @Column('integer', { name: 'tipo_loja_id' })
+  tipoLojaId: number;
+
   @Column('varchar', { length: 200 })
-  @Field(() => String)
-  @ApiProperty({ type: String })
   rua: string;
 
   @Column('varchar', { length: 10 })
-  @Field(() => String)
-  @ApiProperty({ type: String })
   numero: string;
 
   @Column('varchar', { length: 20 })
-  @Field(() => String)
-  @ApiProperty({ type: String })
   cep: string;
 
   @Column('varchar', { length: 50 })
-  @Field(() => String)
-  @ApiProperty({ type: String })
   bairro: string;
 
   @Column('varchar', { length: 50 })
-  @Field(() => String)
-  @ApiProperty({ type: String })
   cidade: string;
 
   @Column('varchar', { length: 100 })
-  @Field(() => String)
-  @ApiProperty({ type: String })
   referencia: string;
 
   @Column('timestamptz', { name: 'criado_em' })
@@ -62,6 +60,10 @@ export class LojaEntity {
 
   @Column('timestamptz', { name: 'desativado_em', nullable: true })
   desativadoEm?: Date;
+
+  @ManyToOne(() => TipoLojaEntity)
+  @JoinColumn({ name: 'tipo_loja_id' })
+  tipoLoja: TipoLojaEntity;
 
   constructor(partial: Partial<LojaEntity>) {
     Object.assign(this, partial);
