@@ -1,9 +1,10 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import 'dotenv/config';
-import { Field, Int } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('loja', { schema: process.env.SCHEMA })
+@ObjectType()
 export class LojaEntity {
   @PrimaryGeneratedColumn()
   @Field(() => Int)
@@ -61,4 +62,8 @@ export class LojaEntity {
 
   @Column('timestamptz', { name: 'desativado_em', nullable: true })
   desativadoEm?: Date;
+
+  constructor(partial: Partial<LojaEntity>) {
+    Object.assign(this, partial);
+  }
 }
