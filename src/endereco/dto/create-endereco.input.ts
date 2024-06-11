@@ -1,6 +1,7 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { EnderecoDto } from './endereco.dto';
 
 @InputType()
 export class CreateEnderecoInput {
@@ -39,4 +40,8 @@ export class CreateEnderecoInput {
   @IsString()
   @IsOptional()
   referencia?: string;
+
+  constructor(partial?: Partial<EnderecoDto>) {
+    Object.assign(this, partial);
+  }
 }

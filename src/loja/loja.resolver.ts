@@ -13,6 +13,7 @@ import { ListLojaOptionsDto } from './dto/list-loja-options.dto';
 import { CreateLojaInput } from './dto/create-loja.input';
 import { EnderecoDto } from 'src/endereco/dto/endereco.dto';
 import { TipoLojaEntity } from 'src/tipo-loja/tipo-loja.entity';
+import { UpdateLojaInput } from './dto/update-loja.input';
 
 @Resolver(() => LojaEntity)
 export class LojaResolver {
@@ -39,6 +40,20 @@ export class LojaResolver {
   ) {
     try {
       return await this.lojaService.create(createDto);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Mutation(() => LojaEntity, { name: 'updateLoja' })
+  async updateLoja(
+    @Args({ name: 'dto', type: () => UpdateLojaInput })
+    updateDto: UpdateLojaInput,
+  ) {
+    try {
+      const { id, ...dto } = updateDto;
+
+      return await this.lojaService.update(id, dto);
     } catch (error) {
       throw error;
     }

@@ -10,6 +10,8 @@ import { EntityManager } from 'typeorm';
 import { LojaEntity } from './loja.entity';
 import { EnderecoService } from 'src/endereco/endereco.service';
 import { EnderecoDto } from 'src/endereco/dto/endereco.dto';
+import { PutLojaDto } from './dto/put-loja.dto';
+import { ObjectFunctions } from 'src/common/functions/object-functions.class';
 
 @Injectable()
 export class LojaService {
@@ -67,6 +69,61 @@ export class LojaService {
     );
   }
 
+  async update(id: number, dto: PutLojaDto, ent?: EntityManager) {
+    const updateDto = ObjectFunctions.removeEmptyProperties(dto);
+    const isObjEmpty = ObjectFunctions.isObjectEmpty(updateDto);
+    if (isObjEmpty) {
+      throw new BadRequestException(
+        'Nenhum dado foi informado para alterar a loja',
+      );
+    }
+
+    const loja = await this.lojaRepo.findOne({ ids: [id], withTipoLoja: true });
+    if (!loja) {
+      throw new BadRequestException(
+        'Loja informada não foi encontrada para edição',
+      );
+    }
+
+    const checkDuplicada = await this.checkDuplicada(
+      { nome: updateDto.nome },
+      'update',
+      loja.id,
+    );
+    if (!checkDuplicada.flag) {
+      throw new BadRequestException(checkDuplicada.message);
+    }
+
+    if (this.hasNotAlteracao(loja, dto)) {
+      return loja;
+    }
+
+    const tipoLoja = dto.tipoLojaId
+      ? await this.tipoLojaService.findById(dto.tipoLojaId)
+      : loja.tipoLoja;
+
+    if (!tipoLoja) {
+      throw new BadRequestException(
+        'Tipo Loja informada não encontrada para edição',
+      );
+    }
+
+    const lojaUpdated = new LojaEntity({
+      ...dto.enderecoDto,
+      id: loja.id,
+      nome: dto.nome || loja.nome,
+      nomeUnique: dto.nome
+        ? StringFunctionsClass.toLowerUnaccent(dto.nome)
+        : loja.nomeUnique,
+      apelido: dto.apelido || loja.apelido,
+      atualizadoEm: new Date(),
+      tipoLojaId: tipoLoja.id,
+      tipoLoja: tipoLoja,
+    });
+
+    return await this.lojaRepo.save(lojaUpdated);
+  }
+
   async checkDuplicada(
     lojaUnique: LojaDto,
     type: 'create' | 'update',
@@ -93,6 +150,7 @@ export class LojaService {
       return { flag: false, message: `Tipo desconhecido "${type}"` };
     }
     const loja = await this.lojaRepo.findOne({
+      select: ['id'],
       nomeUnique,
       ignoredId,
     });
@@ -107,6 +165,38 @@ export class LojaService {
     }
 
     return { flag: true, message: '' };
+  }
+
+  hasAlteracao(loja: LojaEntity, lojaDto: PutLojaDto) {
+    const { nome, enderecoDto, apelido, tipoLojaId } = lojaDto;
+
+    if (
+      nome &&
+      loja.nomeUnique !== StringFunctionsClass.toLowerUnaccent(nome)
+    ) {
+      return true;
+    }
+    if (apelido && loja.apelido !== apelido) {
+      return true;
+    }
+    if (tipoLojaId && loja.tipoLojaId !== tipoLojaId) {
+      return true;
+    }
+    if (
+      enderecoDto &&
+      this.enderecoService.hasChange(
+        this.enderecoService.getEnderecoDto({ ...loja }),
+        this.enderecoService.getEnderecoDto(enderecoDto),
+      )
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
+  hasNotAlteracao(loja: LojaEntity, lojaDto: PutLojaDto) {
+    return !this.hasAlteracao(loja, lojaDto);
   }
 
   async getEndereco(loja: LojaEntity): Promise<EnderecoDto> {

@@ -5,5 +5,6 @@ export class LojaDto {
   nome?: string;
   nomeUnique?: string;
   apelido?: string;
-  endereco?: EnderecoDto;
+  tipoLojaId?: number;
+  enderecoDto?: EnderecoDto;
 }
