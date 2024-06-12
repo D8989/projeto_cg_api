@@ -1,3 +1,9 @@
+# [0.3.0] - 2024-06-11
+## Required
+- BD v0.3.0
+## Added
+- CRUD das novas entidades Loja e Tipo-Loja em Graphql e REST
+
 # [0.2.3] - 2024-06-07
 ## Chored
 * Alteração do Dataloader. Agora utiliza a classe con função estática para criar o loaders.
