@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { LojaRepo } from './loja.repo';
 import { ListLojaOptionsDto } from './dto/list-loja-options.dto';
 import { CreateLojaInput } from './dto/create-loja.input';
@@ -122,6 +126,18 @@ export class LojaService {
     });
 
     return await this.lojaRepo.save(lojaUpdated);
+  }
+
+  async softDelte(id: number, ent?: EntityManager) {
+    const loja = await this.lojaRepo.findOne({
+      ids: [id],
+      select: ['id', 'nome'],
+    });
+    if (!loja) {
+      throw new NotFoundException('Loja não encontrada para desativação');
+    }
+    loja.desativadoEm = new Date();
+    return await this.lojaRepo.save(loja);
   }
 
   async checkDuplicada(

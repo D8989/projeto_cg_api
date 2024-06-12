@@ -1,5 +1,6 @@
 import {
   Args,
+  Int,
   Mutation,
   Parent,
   Query,
@@ -14,6 +15,7 @@ import { CreateLojaInput } from './dto/create-loja.input';
 import { EnderecoDto } from 'src/endereco/dto/endereco.dto';
 import { TipoLojaEntity } from 'src/tipo-loja/tipo-loja.entity';
 import { UpdateLojaInput } from './dto/update-loja.input';
+import { RespMessageClass } from 'src/common/classes/resp-message.class';
 
 @Resolver(() => LojaEntity)
 export class LojaResolver {
@@ -54,6 +56,19 @@ export class LojaResolver {
       const { id, ...dto } = updateDto;
 
       return await this.lojaService.update(id, dto);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Mutation(() => RespMessageClass, { name: 'deactivateLoja' })
+  async deactivateLoja(@Args({ name: 'id', type: () => Int }) id: number) {
+    try {
+      const lojaDesativada = await this.lojaService.softDelte(id);
+      return new RespMessageClass({
+        id: lojaDesativada.id,
+        message: `Loja "${lojaDesativada.nome}" desativada com sucesso`,
+      });
     } catch (error) {
       throw error;
     }
