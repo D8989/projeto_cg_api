@@ -61,6 +61,15 @@ export class LojaResolver {
     }
   }
 
+  @Query(() => LojaEntity, { name: 'loja' })
+  async visualizaLoja(@Args({ name: 'id', type: () => Int }) id: number) {
+    try {
+      return await this.lojaService.findById(id);
+    } catch (error) {
+      throw error;
+    }
+  }
+
   @Mutation(() => RespMessageClass, { name: 'deactivateLoja' })
   async deactivateLoja(@Args({ name: 'id', type: () => Int }) id: number) {
     try {
