@@ -12,9 +12,13 @@ import { ARepo } from 'src/common/classes/repo.abstract';
 import { RepoFunctions } from 'src/common/functions/repo-functions.class';
 import { ObjectFunctions } from 'src/common/functions/object-functions.class';
 import { ArrayFunctions } from 'src/common/functions/array-functions.class';
+import { RepoBasic } from 'src/common/interfaces/repo-basic.interface';
 
 @Injectable()
-export class ProdutoRepo extends ARepo<ProdutoEntity, IOptProduto> {
+export class ProdutoRepo
+  extends ARepo<ProdutoEntity, IOptProduto>
+  implements RepoBasic<ProdutoEntity, IOptProduto>
+{
   private readonly mAlias: string;
   private readonly ibAlias: string;
   private readonly tibAlias: string;
