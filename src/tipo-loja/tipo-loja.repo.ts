@@ -17,11 +17,13 @@ export class TipoLojaRepo
   extends ARepo<TipoLojaEntity, IOptTipoLoja>
   implements RepoBasic<TipoLojaEntity, IOptTipoLoja>
 {
+  private lojaAlias: string;
   constructor(
     @InjectRepository(TipoLojaEntity)
     private repo: Repository<TipoLojaEntity>,
   ) {
-    super([]);
+    super(['l']);
+    this.lojaAlias = 'l';
   }
 
   async save(tipoLoja: TipoLojaEntity, ent?: EntityManager) {
@@ -62,6 +64,31 @@ export class TipoLojaRepo
     return await query.getOne();
   }
 
+  async findOneWithCountLoja(
+    id: number,
+  ): Promise<{ id: number; countLoja: number } | null> {
+    const query = this.repo.createQueryBuilder('tl');
+
+    query
+      .select(`${query.alias}.id`, 'id')
+      .addSelect(`COUNT(${this.lojaAlias}.id)::INTEGER`, 'count');
+
+    this.buildSpecificJoin(query, this.lojaAlias, false);
+    this.buildWhere(query, { ids: [id] });
+
+    query.groupBy(`${query.alias}.id`);
+
+    return query.getRawOne().then((resp) => {
+      if (!resp) {
+        return null;
+      }
+      return {
+        id: resp.id,
+        countLoja: resp.count,
+      };
+    });
+  }
+
   protected override buildWhere(
     qb: SelectQueryBuilder<TipoLojaEntity>,
     opt: IOptTipoLoja,
@@ -98,7 +125,26 @@ export class TipoLojaRepo
   protected override buildSpecificJoin(
     qb: SelectQueryBuilder<TipoLojaEntity>,
     alias?: string | undefined,
+    isInner = true,
   ): boolean {
+    switch (alias) {
+      case this.lojaAlias:
+        if (isInner) {
+          qb.innerJoin(
+            `${qb.alias}.lojas`,
+            this.lojaAlias,
+            `${this.lojaAlias}.desativadoEm IS NULL`,
+          );
+        } else {
+          qb.leftJoin(
+            `${qb.alias}.lojas`,
+            this.lojaAlias,
+            `${this.lojaAlias}.desativadoEm IS NULL`,
+          );
+        }
+        return true;
+    }
+
     return false;
   }
 

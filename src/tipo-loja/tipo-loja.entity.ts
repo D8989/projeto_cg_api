@@ -1,7 +1,8 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import 'dotenv/config';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { ApiProperty } from '@nestjs/swagger';
+import { LojaEntity } from 'src/loja/loja.entity';
 
 @Entity('tipo_loja', { schema: process.env.SCHEMA })
 @ObjectType()
@@ -32,6 +33,9 @@ export class TipoLojaEntity {
 
   @Column('timestamptz', { name: 'desativado_em', nullable: true })
   desativadoEm?: Date;
+
+  @OneToMany(() => LojaEntity, (l) => l.tipoLoja)
+  lojas: LojaEntity[];
 
   constructor(partial: Partial<TipoLojaEntity>) {
     Object.assign(this, partial);

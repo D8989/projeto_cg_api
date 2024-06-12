@@ -166,14 +166,24 @@ export class TipoLojaService {
   }
 
   async softDelete(id: number, ent?: EntityManager) {
-    const tipo = await this.tipoLojaRepo.findOne({ ids: [id], select: ['id'] });
-    if (!tipo) {
+    const tipoResp = await this.tipoLojaRepo.findOneWithCountLoja(id);
+    if (!tipoResp) {
       throw new NotFoundException(
         'Tipo-loja não encontrado para a desativação',
       );
     }
 
-    tipo.desativadoEm = new Date();
+    if (tipoResp.countLoja > 0) {
+      throw new BadRequestException(
+        `Não é possível desativar tipo-loja que esteja sendo usada. Tipo está associada à ${tipoResp.countLoja} lojas`,
+      );
+    }
+
+    const tipo = new TipoLojaEntity({
+      id: tipoResp.id,
+      desativadoEm: new Date(),
+    });
     await this.tipoLojaRepo.save(tipo, ent);
+    return tipo;
   }
 }

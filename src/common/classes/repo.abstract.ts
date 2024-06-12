@@ -61,6 +61,7 @@ export abstract class ARepo<T extends LiteralObject, U extends IFindOpt> {
   protected abstract buildSpecificJoin(
     qb: SelectQueryBuilder<T>,
     alias?: string,
+    isInner?: boolean,
   ): boolean;
   protected abstract buildOrder(qb: SelectQueryBuilder<T>, opt: U): void;
   protected abstract buildWhere(qb: SelectQueryBuilder<T>, opt: U): void;
