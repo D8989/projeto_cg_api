@@ -7,7 +7,6 @@ import {
 } from 'typeorm';
 import 'dotenv/config';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { ApiProperty } from '@nestjs/swagger';
 import { TipoLojaEntity } from 'src/tipo-loja/tipo-loja.entity';
 
 @Entity('loja', { schema: process.env.SCHEMA })
@@ -15,12 +14,10 @@ import { TipoLojaEntity } from 'src/tipo-loja/tipo-loja.entity';
 export class LojaEntity {
   @PrimaryGeneratedColumn()
   @Field(() => Int)
-  @ApiProperty({ type: Number })
   id: number;
 
   @Column('varchar', { length: 100 })
   @Field(() => String)
-  @ApiProperty({ type: String })
   nome: string;
 
   @Column('varchar', { name: 'nome_unique', length: 100 })
@@ -28,7 +25,6 @@ export class LojaEntity {
 
   @Column('varchar', { length: 100 })
   @Field(() => String)
-  @ApiProperty({ type: String })
   apelido: string;
 
   @Column('integer', { name: 'tipo_loja_id' })

@@ -16,6 +16,8 @@ import { EnderecoService } from 'src/endereco/endereco.service';
 import { EnderecoDto } from 'src/endereco/dto/endereco.dto';
 import { PutLojaDto } from './dto/put-loja.dto';
 import { ObjectFunctions } from 'src/common/functions/object-functions.class';
+import { ViewLojaDto } from './dto/view-loja.dto';
+import { TipoLojaEntity } from 'src/tipo-loja/tipo-loja.entity';
 
 @Injectable()
 export class LojaService {
@@ -29,7 +31,31 @@ export class LojaService {
     if (!opt.limite) {
       opt.limite = 100;
     }
-    return this.lojaRepo.findAllAndCount(opt.toIOptLoja());
+    return await this.lojaRepo.findAllAndCount(opt.toIOptLoja());
+  }
+
+  async findViewDtoPaginado(opt: ListLojaOptionsDto) {
+    opt.withTipoLoja = true;
+    const resp = await this.findPaginado(opt);
+    return [resp[0].map((r) => this.entityToViewDto(r)), resp[1]] as [
+      ViewLojaDto[],
+      number,
+    ];
+  }
+
+  async getViewDto(id: number) {
+    const opt = new ListLojaOptionsDto({
+      ids: [id],
+      withTipoLoja: true,
+    });
+
+    return await this.findAll(opt).then((resp) => {
+      if (resp.length === 0) {
+        throw new NotFoundException('Loja não encontrada para a visualização');
+      }
+
+      return this.entityToViewDto(resp[0]);
+    });
   }
 
   async findAll(opt: ListLojaOptionsDto) {
@@ -221,7 +247,27 @@ export class LojaService {
     });
   }
 
+  getEnderecoSimple(loja: LojaEntity): EnderecoDto {
+    return this.enderecoService.getEnderecoDto({
+      ...loja,
+    });
+  }
+
   async getTipoLoja(loja: LojaEntity) {
     return await this.tipoLojaService.findByLoader(loja.tipoLojaId);
+  }
+
+  private entityToViewDto(loja: LojaEntity): ViewLojaDto {
+    return new ViewLojaDto({
+      id: loja.id,
+      nome: loja.nome,
+      apelido: loja.apelido,
+      tipoLoja: new TipoLojaEntity({
+        id: loja.tipoLoja.id,
+        nome: loja.tipoLoja.nome,
+        descricao: loja.tipoLoja.descricao,
+      }),
+      enderecoDto: this.getEnderecoSimple(loja),
+    });
   }
 }

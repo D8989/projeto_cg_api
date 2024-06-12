@@ -11,6 +11,7 @@ class BaseListLojaOptionsDto extends ListOptionsDto {
   nome?: string;
 
   nomeUnique?: string;
+  withTipoLoja?: boolean;
 
   constructor(partial?: Partial<BaseListLojaOptionsDto>) {
     super(partial);
@@ -30,6 +31,7 @@ export class ListLojaOptionsDto extends BaseListLojaOptionsDto {
       ...this,
       nome: this.nome ? { value: this.nome, typeOperator: 'ilike' } : null,
       nomeUnique: this.nomeUnique,
+      withTipoLoja: this.withTipoLoja || false,
     };
   }
 }

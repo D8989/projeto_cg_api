@@ -12,7 +12,7 @@ export class CreateEnderecoInput {
   rua: string;
 
   @Field(() => String, { nullable: true })
-  @ApiProperty({ type: String, nullable: true })
+  @ApiPropertyOptional({ type: String, nullable: true })
   @IsString()
   @IsOptional()
   numero?: string;
