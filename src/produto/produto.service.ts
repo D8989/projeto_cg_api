@@ -200,7 +200,7 @@ export class ProdutoService {
       nomeUnique: StringFunctionsClass.toLowerUnaccent(uniqKeys.nome),
       marcaIds: [uniqKeys.marcaId],
       itemBaseIds: [uniqKeys.itemBaseId],
-      quantidades: [uniqKeys.quantidade],
+      quantidades: uniqKeys.quantidade ? [uniqKeys.quantidade] : [],
     });
 
     if (produto) {

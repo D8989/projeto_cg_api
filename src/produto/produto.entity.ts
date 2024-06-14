@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ItemBaseEntity } from 'src/item_base/item_base.entity';
 import { MarcaEntity } from 'src/marca/marca.entity';
 import {
@@ -42,15 +42,15 @@ export class ProdutoEntity {
   @Column()
   descricao: string;
 
-  @Field(() => Int)
-  @ApiProperty({ type: Number })
-  @Column()
-  quantidade: number;
+  @Field(() => Int, { nullable: true })
+  @ApiPropertyOptional({ type: Number, nullable: true })
+  @Column({ nullable: true })
+  quantidade?: number;
 
-  @Field(() => String)
-  @ApiProperty({ type: String })
-  @Column()
-  gramatura: string;
+  @Field(() => String, { nullable: true })
+  @ApiPropertyOptional({ type: String, nullable: true })
+  @Column({ nullable: true })
+  gramatura?: string;
 
   @Column('timestamptz', { name: 'criado_em' })
   criadoEm: Date;
@@ -60,6 +60,9 @@ export class ProdutoEntity {
 
   @Column('timestamptz', { name: 'desativado_em', nullable: true })
   desativadoEm?: Date;
+
+  @Column('boolean', { name: 'has_embalagem' })
+  hasEmbalagem: boolean;
 
   @ApiProperty({ type: () => MarcaEntity })
   @ManyToOne(() => MarcaEntity, (marca) => marca.produtos)
