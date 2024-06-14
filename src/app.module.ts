@@ -8,7 +8,9 @@ import { ConfigModule } from './config/config.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from './config/config.service';
 import { ProdutoModule } from './produto/produto.module';
-import { LojaModule } from './loja/loja.module';
+import { CompraModule } from './compra/compra.module';
+import { UsuarioModule } from './usuario/usuario.module';
+import { PagamentoModule } from './pagamento/pagamento.module';
 
 @Module({
   imports: [
@@ -37,7 +39,9 @@ import { LojaModule } from './loja/loja.module';
     }),
     ConfigModule,
     ProdutoModule,
-    LojaModule,
+    CompraModule,
+    UsuarioModule,
+    PagamentoModule,
   ],
   controllers: [AppController],
   providers: [AppService, AppResolver],
