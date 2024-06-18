@@ -18,6 +18,7 @@ import { PutLojaDto } from './dto/put-loja.dto';
 import { ObjectFunctions } from 'src/common/functions/object-functions.class';
 import { ViewLojaDto } from './dto/view-loja.dto';
 import { TipoLojaEntity } from 'src/tipo-loja/tipo-loja.entity';
+import { IOptLoja } from './interfaces/loja-options.interface';
 
 @Injectable()
 export class LojaService {
@@ -69,8 +70,11 @@ export class LojaService {
     return this.lojaRepo.findAll({ ids: ids });
   }
 
-  async findById(id: number) {
-    return await this.lojaRepo.findOne({ ids: [id] });
+  async findById(id: number, opt?: IOptLoja) {
+    return await this.lojaRepo.findOne({
+      ...opt,
+      ids: [id],
+    });
   }
 
   async create(dto: CreateLojaInput, ent?: EntityManager) {

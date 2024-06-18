@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CompraEntity } from './compra.entity';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ARepo } from 'src/common/classes/repo.abstract';
 import { IOptCompra } from './interfaces/opt-compra.interface';
 import { RepoBasic } from 'src/common/interfaces/repo-basic.interface';
@@ -39,6 +39,20 @@ export class CompraRepo
 
   async findOne(opt: IOptCompra): Promise<CompraEntity | null> {
     return null;
+  }
+
+  async save(compra: CompraEntity, ent?: EntityManager) {
+    const repoEnt = ent?.getRepository(CompraEntity) || this.repo;
+    return await repoEnt.save(compra);
+  }
+
+  async getNextCodigo(ent?: EntityManager) {
+    const repoEnt = ent?.getRepository(CompraEntity) || this.repo;
+    return await repoEnt
+      .createQueryBuilder('c')
+      .select('COALESCE(MAX(c.codigo), 0) + 1', 'nextCodigo')
+      .getRawOne()
+      .then((resp) => resp.nextCodigo);
   }
 
   protected override buildSpecificJoin(

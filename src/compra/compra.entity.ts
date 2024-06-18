@@ -30,6 +30,9 @@ export class CompraEntity {
   @Column('timestamptz', { name: 'data_compra' })
   dataCompra: Date;
 
+  @Column({ name: 'loja_id' })
+  lojaId: number;
+
   @Column('timestamptz', { name: 'criado_em' })
   criadoEm: Date;
 

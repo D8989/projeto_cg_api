@@ -1,8 +1,9 @@
-import { Args, Query, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { CompraEntity } from './compra.entity';
 import { CompraService } from './compra.service';
 import { ListCompraDto } from './dto/list-compra.dto';
 import { ListCompraOptionsDto } from './dto/list-compra-options.dto';
+import { CreateCompraInput } from './dto/create-compra.input';
 
 @Resolver(() => CompraEntity)
 export class CompraResolver {
@@ -19,6 +20,18 @@ export class CompraResolver {
           new ListCompraOptionsDto(options),
         ),
       );
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Mutation(() => CompraEntity, { name: 'createCompra' })
+  async createCompra(
+    @Args({ name: 'createDto', type: () => CreateCompraInput })
+    dto: CreateCompraInput,
+  ) {
+    try {
+      return await this.compraService.create(dto);
     } catch (error) {
       throw error;
     }
