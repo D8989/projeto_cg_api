@@ -1,9 +1,17 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql';
 import { CompraEntity } from './compra.entity';
 import { CompraService } from './compra.service';
 import { ListCompraDto } from './dto/list-compra.dto';
 import { ListCompraOptionsDto } from './dto/list-compra-options.dto';
 import { CreateCompraInput } from './dto/create-compra.input';
+import { LojaEntity } from 'src/loja/loja.entity';
 
 @Resolver(() => CompraEntity)
 export class CompraResolver {
@@ -35,5 +43,10 @@ export class CompraResolver {
     } catch (error) {
       throw error;
     }
+  }
+
+  @ResolveField(() => LojaEntity, { name: 'loja' })
+  async getLoja(@Parent() compra: CompraEntity) {
+    return await this.compraService.getLojaByLoader(compra);
   }
 }

@@ -47,6 +47,17 @@ export class CompraService {
     );
   }
 
+  async getLojaByLoader(compra: CompraEntity) {
+    return await this.lojaService.findByLoader(compra.lojaId).then((resp) => {
+      if (!resp) {
+        throw new BadRequestException(
+          `Loja da compra "${compra.codigo}" não encontrada`,
+        );
+      }
+      return resp;
+    });
+  }
+
   checkDto(dto: CreateCompraInput): RespBollClass {
     const { dataCompra } = dto;
     if (dataCompra && !DateFunctions.isDateValid(dataCompra)) {
