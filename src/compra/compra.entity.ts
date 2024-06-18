@@ -44,7 +44,7 @@ export class CompraEntity {
   loja: LojaEntity;
 
   @OneToMany(() => ItemCompraEntity, (item) => item.produto)
-  intes: ItemCompraEntity[];
+  itens: ItemCompraEntity[];
 
   constructor(partial: Partial<CompraEntity>) {
     Object.assign(this, partial);

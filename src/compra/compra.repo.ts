@@ -11,15 +11,26 @@ export class CompraRepo
   extends ARepo<CompraEntity, IOptCompra>
   implements RepoBasic<CompraEntity, IOptCompra>
 {
+  private lojaAlias: string;
   constructor(
     @InjectRepository(CompraEntity)
-    repo: Repository<CompraEntity>,
+    private repo: Repository<CompraEntity>,
   ) {
-    super([]);
+    super(['l']);
+    this.lojaAlias = 'l';
   }
 
   async findAllAndCount(opt: IOptCompra): Promise<[CompraEntity[], number]> {
-    return [[], 0] as [CompraEntity[], number];
+    const query = this.repo.createQueryBuilder('c');
+    this.buildCustomSelect(opt);
+
+    this.buildSelect(query, opt);
+    this.buildJoin(query, opt);
+    this.buildWhere(query, opt);
+    this.buildOrder(query, opt);
+    this.buildPagination(query, opt);
+
+    return await query.getManyAndCount();
   }
 
   async findAll(opt: IOptCompra): Promise<CompraEntity[]> {
