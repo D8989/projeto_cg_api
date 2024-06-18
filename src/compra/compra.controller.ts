@@ -1,7 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBody, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CompraService } from './compra.service';
-import { ListCompraDto } from './dto/list-compra.dto';
+import { ListViewCompraDto } from './dto/list-view-compra.dto';
 import { ListCompraOptionsDto } from './dto/list-compra-options.dto';
 
 @Controller('compra')
@@ -11,13 +11,13 @@ export class CompraController {
 
   @Post('/list')
   @ApiOkResponse({
-    type: ListCompraDto,
+    type: ListViewCompraDto,
   })
   @ApiBody({ required: false, type: () => ListCompraOptionsDto })
   async listCompras(@Body() listOpt?: ListCompraOptionsDto) {
     try {
-      return new ListCompraDto(
-        await this.compraService.listPaginado(
+      return new ListViewCompraDto(
+        await this.compraService.getViewListCompraPaginado(
           new ListCompraOptionsDto(listOpt),
         ),
       );

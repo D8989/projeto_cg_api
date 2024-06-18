@@ -28,6 +28,8 @@ class BaseListCompraOptionsDto extends ListOptionsDto {
   @IsOptional()
   data?: Date;
 
+  withLoja?: boolean;
+
   constructor(partial?: Partial<BaseListCompraOptionsDto>) {
     super(partial);
     Object.assign(this, partial);

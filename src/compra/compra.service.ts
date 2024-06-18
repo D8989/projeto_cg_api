@@ -7,6 +7,7 @@ import { DateFunctions } from 'src/common/functions/date-functions.class';
 import { RespBollClass } from 'src/common/classes/resp-boll.class';
 import { CompraEntity } from './compra.entity';
 import { EntityManager } from 'typeorm';
+import { ViewListCompraDto } from './dto/view-list-compra.dto';
 
 @Injectable()
 export class CompraService {
@@ -19,6 +20,17 @@ export class CompraService {
     opt.limite = opt.limite || 100;
 
     return await this.compraRepo.findAllAndCount(opt.toIOptCompra());
+  }
+
+  async getViewListCompraPaginado(
+    opt: ListCompraOptionsDto,
+  ): Promise<[ViewListCompraDto[], number]> {
+    opt.withLoja = true;
+    return await this.compraRepo
+      .findAllAndCount(opt.toIOptCompra())
+      .then((resp) => {
+        return [resp[0].map((r) => this.entityToListView(r)), resp[1]];
+      });
   }
 
   async create(createDto: CreateCompraInput, ent?: EntityManager) {
@@ -68,5 +80,15 @@ export class CompraService {
     }
 
     return { flag: true, message: '' };
+  }
+
+  private entityToListView(compra: CompraEntity): ViewListCompraDto {
+    return new ViewListCompraDto({
+      id: compra.id,
+      codigo: compra.codigo,
+      dataCompra: compra.dataCompra,
+      lojaNome: compra.loja.nome,
+      valorTotal: 0,
+    });
   }
 }

@@ -5,4 +5,5 @@ export interface IOptCompra extends IFindOpt {
   codigo?: string;
   lojaNome?: IColumnStrOpt;
   data?: Date;
+  withLoja?: boolean;
 }

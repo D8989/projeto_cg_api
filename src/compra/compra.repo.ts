@@ -60,7 +60,14 @@ export class CompraRepo
     alias?: string | undefined,
     isInner?: boolean | undefined,
   ): boolean {
-    return false;
+    switch (alias) {
+      case this.lojaAlias:
+        qb.innerJoin(`${qb.alias}.loja`, this.lojaAlias);
+        return true;
+
+      default:
+        return false;
+    }
   }
 
   protected override buildOrder(
@@ -73,5 +80,12 @@ export class CompraRepo
     opt: IOptCompra,
   ): void {}
 
-  protected override buildCustomSelect(opt: IOptCompra): void {}
+  protected override buildCustomSelect(opt: IOptCompra): void {
+    const { withLoja } = opt;
+    if (withLoja) {
+      opt.customSelect = {
+        l: ['id', 'nome'],
+      };
+    }
+  }
 }
