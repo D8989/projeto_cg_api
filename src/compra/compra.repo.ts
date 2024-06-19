@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CompraEntity } from './compra.entity';
-import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import {
+  Brackets,
+  EntityManager,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { ARepo } from 'src/common/classes/repo.abstract';
 import { IOptCompra } from './interfaces/opt-compra.interface';
 import { RepoBasic } from 'src/common/interfaces/repo-basic.interface';
@@ -38,7 +43,15 @@ export class CompraRepo
   }
 
   async findOne(opt: IOptCompra): Promise<CompraEntity | null> {
-    return null;
+    const query = this.repo.createQueryBuilder('c');
+    this.buildCustomSelect(opt);
+
+    this.buildSelect(query, opt);
+    this.buildJoin(query, opt);
+    this.buildWhere(query, opt);
+    this.buildOrder(query, opt);
+
+    return await query.getOne();
   }
 
   async save(compra: CompraEntity, ent?: EntityManager) {
@@ -78,7 +91,18 @@ export class CompraRepo
   protected override buildWhere(
     qb: SelectQueryBuilder<CompraEntity>,
     opt: IOptCompra,
-  ): void {}
+  ): void {
+    const { ids, ignoredId } = opt;
+    const alias = qb.alias;
+    qb.where(`${alias}.desativadoEm IS NULL`);
+
+    if (ids && ids.length > 0) {
+      qb.andWhere(`${alias}.id IN(:...ids)`, { ids });
+    }
+    if (ignoredId) {
+      qb.andWhere(`${alias}.id <> :ignoredId`, { ignoredId });
+    }
+  }
 
   protected override buildCustomSelect(opt: IOptCompra): void {
     const { withLoja } = opt;

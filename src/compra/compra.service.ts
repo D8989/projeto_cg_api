@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CompraRepo } from './compra.repo';
 import { ListCompraOptionsDto } from './dto/list-compra-options.dto';
 import { CreateCompraInput } from './dto/create-compra.input';
@@ -8,6 +12,7 @@ import { RespBollClass } from 'src/common/classes/resp-boll.class';
 import { CompraEntity } from './compra.entity';
 import { EntityManager } from 'typeorm';
 import { ViewListCompraDto } from './dto/view-list-compra.dto';
+import { PutCompraInput } from './dto/put-compra.input';
 
 @Injectable()
 export class CompraService {
@@ -59,6 +64,30 @@ export class CompraService {
       }),
     );
   }
+  async update(id: number, dto: PutCompraInput, ent?: EntityManager) {
+    const compra = await this.compraRepo.findOne({ ids: [id] });
+    if (!compra) {
+      throw new NotFoundException('Compra não encontrada para edição');
+    }
+
+    const { dataCompra, lojaId } = dto;
+    if (lojaId) {
+      const loja = await this.lojaService.findById(lojaId, { select: ['id'] });
+      if (!loja) {
+        throw new BadRequestException(
+          `Loja informada não foi encontrada para a edição da compra ${compra.codigo}`,
+        );
+      }
+      compra.lojaId = loja.id;
+    }
+
+    if (dataCompra) {
+      compra.dataCompra = dataCompra;
+    }
+
+    compra.atualizadoEm = new Date();
+    await this.compraRepo.save(compra, ent);
+  }
 
   async getLojaByLoader(compra: CompraEntity) {
     return await this.lojaService.findByLoader(compra.lojaId).then((resp) => {
@@ -83,7 +112,7 @@ export class CompraService {
     return { flag: true, message: '' };
   }
 
-  private entityToListView(compra: CompraEntity): ViewListCompraDto {
+  entityToListView(compra: CompraEntity): ViewListCompraDto {
     return new ViewListCompraDto({
       id: compra.id,
       codigo: compra.codigo,

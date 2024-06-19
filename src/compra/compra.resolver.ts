@@ -12,6 +12,8 @@ import { ListCompraDto } from './dto/list-compra.dto';
 import { ListCompraOptionsDto } from './dto/list-compra-options.dto';
 import { CreateCompraInput } from './dto/create-compra.input';
 import { LojaEntity } from 'src/loja/loja.entity';
+import { UpdateCompraInput } from './dto/update-compra.input';
+import { RespMessageClass } from 'src/common/classes/resp-message.class';
 
 @Resolver(() => CompraEntity)
 export class CompraResolver {
@@ -41,6 +43,26 @@ export class CompraResolver {
     try {
       dto.dataCompra = new Date(dto.dataCompraStr);
       return await this.compraService.create(dto);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Mutation(() => RespMessageClass, { name: 'updateCompra' })
+  async updateCompra(
+    @Args({ name: 'updateDto', type: () => UpdateCompraInput })
+    updateDto: UpdateCompraInput,
+  ) {
+    try {
+      const { id, ...dto } = updateDto;
+      if (dto.dataCompraStr) {
+        dto.dataCompra = new Date(dto.dataCompraStr);
+      }
+      await this.compraService.update(id, dto);
+      return new RespMessageClass({
+        id: id,
+        message: 'Compra editada com sucesso',
+      });
     } catch (error) {
       throw error;
     }
