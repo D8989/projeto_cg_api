@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Param,
   ParseIntPipe,
   Post,
@@ -68,6 +69,20 @@ export class CompraController {
       return new RespMessageClass({
         id: id,
         message: 'Compra editada com sucesso',
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Delete('/:id/soft')
+  @ApiOkResponse({ type: RespMessageClass })
+  async deactovateCompra(@Param('id', ParseIntPipe) id: number) {
+    try {
+      await this.compraService.deactivate(id);
+      return new RespMessageClass({
+        id: id,
+        message: 'Compra removida com sucesso',
       });
     } catch (error) {
       throw error;

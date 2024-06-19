@@ -89,6 +89,16 @@ export class CompraService {
     await this.compraRepo.save(compra, ent);
   }
 
+  async deactivate(id: number, ent?: EntityManager) {
+    const compra = await this.compraRepo.findOne({ ids: [id], select: ['id'] });
+    if (!compra) {
+      throw new NotFoundException('Compra não encontrada para a desativação');
+    }
+
+    compra.desativadoEm = new Date();
+    await this.compraRepo.save(compra, ent);
+  }
+
   async getLojaByLoader(compra: CompraEntity) {
     return await this.lojaService.findByLoader(compra.lojaId).then((resp) => {
       if (!resp) {

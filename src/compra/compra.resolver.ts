@@ -1,5 +1,6 @@
 import {
   Args,
+  Int,
   Mutation,
   Parent,
   Query,
@@ -62,6 +63,19 @@ export class CompraResolver {
       return new RespMessageClass({
         id: id,
         message: 'Compra editada com sucesso',
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Mutation(() => RespMessageClass, { name: 'softDeleteCompra' })
+  async removeCompra(@Args({ name: 'id', type: () => Int }) id: number) {
+    try {
+      await this.compraService.deactivate(id);
+      return new RespMessageClass({
+        id: id,
+        message: 'Compra removida com sucesso',
       });
     } catch (error) {
       throw error;
