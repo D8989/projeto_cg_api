@@ -86,7 +86,9 @@ export class CompraRepo
   protected override buildOrder(
     qb: SelectQueryBuilder<CompraEntity>,
     opt: IOptCompra,
-  ): void {}
+  ): void {
+    qb.orderBy(`${qb.alias}.dataCompra`, 'DESC');
+  }
 
   protected override buildWhere(
     qb: SelectQueryBuilder<CompraEntity>,
