@@ -55,6 +55,7 @@ export class CompraService {
         dataCompra,
         lojaId,
         codigo: nextCodigo,
+        loja: lojaInput,
       }),
     );
   }

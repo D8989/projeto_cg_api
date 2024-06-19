@@ -15,15 +15,10 @@ export function IsIsoUtcDateStr(validationOptions?: ValidationOptions) {
       options: validOpt,
       validator: {
         validate(value, validationArguments) {
-          console.log('VALUE: ', value, 'type: ', typeof value);
-
-          if (typeof value !== 'string') {
-            return false;
+          if (value && typeof value === 'string') {
+            return DateFunctions.isStrValid(value);
           }
-
-          console.log('TESTE');
-
-          return DateFunctions.isStrValid(value);
+          return false;
         },
       },
     });

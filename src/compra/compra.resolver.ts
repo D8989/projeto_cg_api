@@ -39,6 +39,7 @@ export class CompraResolver {
     dto: CreateCompraInput,
   ) {
     try {
+      dto.dataCompra = new Date(dto.dataCompraStr);
       return await this.compraService.create(dto);
     } catch (error) {
       throw error;
