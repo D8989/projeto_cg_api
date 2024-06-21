@@ -1,7 +1,8 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt } from 'class-validator';
-import { IsNumberStringDecimal } from 'src/common/decorators/is-number-string-decimal.decorator';
+import { Transform } from 'class-transformer';
+import { IsInt, IsNumber } from 'class-validator';
+import { StringFunctionsClass } from 'src/common/functions/string-functions.class';
 
 @InputType()
 export class AddItemCompraDto {
@@ -19,10 +20,27 @@ export class AddItemCompraDto {
     description: 'Máximo de 3 casas decimais separado por ponto',
   })
   @ApiProperty({ type: String })
-  @IsNumberStringDecimal(3, {
-    message: 'Texto númerico deve der no máximo 3 decimais separado por ponto',
+  @Transform(({ obj, value }) => {
+    obj.quantidade = StringFunctionsClass.stringToNumberDecimal(value, 3);
+    return StringFunctionsClass.stringToNumberDecimal(value, 3);
   })
-  quantidadeStr: string;
-
+  @IsNumber(
+    { maxDecimalPlaces: 3 },
+    { message: 'formato de quantidade é inválido' },
+  )
   quantidade: number;
+
+  @Field(() => String, {
+    description: 'Máximo de 2 casas decimais separado por ponto',
+  })
+  @ApiProperty({ type: String })
+  @Transform(({ obj, value }) => {
+    obj.precoUnidade = StringFunctionsClass.stringToNumberDecimal(value, 2);
+    return StringFunctionsClass.stringToNumberDecimal(value, 2);
+  })
+  @IsNumber(
+    { maxDecimalPlaces: 2 },
+    { message: 'formato do preço médio inválido' },
+  )
+  precoUnidade: number;
 }

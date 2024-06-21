@@ -6,8 +6,8 @@ export function IsNumberStringDecimal(
   validationOptions?: ValidationOptions,
 ) {
   const validOpt = {
-    ...validationOptions,
     message: `numeral string não respeita o formado desejado`,
+    ...validationOptions,
   };
   return function (obj: object, propertyName: string) {
     registerDecorator({

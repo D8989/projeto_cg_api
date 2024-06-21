@@ -10,15 +10,20 @@ export class StringFunctionsClass {
     return str.charAt(0).toUpperCase() + str.toLowerCase().slice(1);
   }
 
-  static isStringNumberDecimal(str: string, decimals: number) {
+  static isStringNumberDecimal(str: string, decimals: number): boolean {
     if (decimals < 0) return false;
-    console.log(this.getRegexDecimal(decimals));
-
     return this.getRegexDecimal(decimals).test(str);
   }
 
+  static stringToNumberDecimal(str: string, decimals: number): number | null {
+    if (!this.isStringNumberDecimal(str, decimals)) {
+      return null;
+    }
+    return parseFloat(str);
+  }
+
   private static getRegexDecimal(d: number) {
-    let regexStr = '[1-9]+';
+    let regexStr = '(0|[1-9]+)';
 
     if (d === 0) {
       return new RegExp(`^${regexStr}$`);
