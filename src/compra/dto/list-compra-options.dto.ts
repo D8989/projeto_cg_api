@@ -79,7 +79,14 @@ export class ListCompraOptionsDto extends BaseListCompraOptionsDto {
         (this.itens.joinProdutoIds && this.itens.joinProdutoIds.length > 0)
       ) {
         obj['i'] = {
-          colums: ['id', 'produtoId', 'compraId', 'quantidade', 'gramatura'],
+          colums: [
+            'id',
+            'produtoId',
+            'compraId',
+            'quantidade',
+            'gramatura',
+            'custo',
+          ],
           isInner: this.itens.isInner,
         };
       }

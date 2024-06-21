@@ -26,12 +26,30 @@ export class ItemCompraEntity {
 
   @Field(() => Number)
   @ApiProperty({ type: Number })
-  @Column('numeric')
+  @Column('numeric', {
+    transformer: {
+      from(value: string) {
+        return parseFloat(value);
+      },
+      to(value: number) {
+        return value.toString();
+      },
+    },
+  })
   quantidade: number;
 
   @Field(() => Number)
   @ApiProperty({ type: Number })
-  @Column('numeric')
+  @Column('numeric', {
+    transformer: {
+      from(value: string) {
+        return parseFloat(value);
+      },
+      to(value: number) {
+        return value.toString();
+      },
+    },
+  })
   custo: number;
 
   @Field(() => String)

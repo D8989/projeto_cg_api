@@ -13,12 +13,14 @@ import { CompraEntity } from './compra.entity';
 import { EntityManager } from 'typeorm';
 import { ViewListCompraDto } from './dto/view-list-compra.dto';
 import { PutCompraInput } from './dto/put-compra.input';
+import { ItemCompraService } from 'src/item-compra/item-compra.service';
 
 @Injectable()
 export class CompraService {
   constructor(
     private compraRepo: CompraRepo,
     private lojaService: LojaService,
+    private itemCompraService: ItemCompraService,
   ) {}
 
   async listPaginado(opt: ListCompraOptionsDto) {
@@ -108,6 +110,10 @@ export class CompraService {
       }
       return resp;
     });
+  }
+
+  async findOneCompra(listOpt: ListCompraOptionsDto) {
+    return await this.compraRepo.findOne(listOpt.toIOptCompra());
   }
 
   checkDto(dto: CreateCompraInput): RespBollClass {

@@ -1,7 +1,8 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsInt, IsNumber } from 'class-validator';
+import { IsEnum, IsInt, IsNumber, IsPositive } from 'class-validator';
+import { EGramatura } from 'src/common/enum/gramatura.enum';
 import { StringFunctionsClass } from 'src/common/functions/string-functions.class';
 
 @InputType()
@@ -14,7 +15,7 @@ export class AddItemCompraDto {
   @Field(() => Int)
   @ApiProperty({ type: Number })
   @IsInt()
-  CompraId: number;
+  compraId: number;
 
   @Field(() => String, {
     description: 'Máximo de 3 casas decimais separado por ponto',
@@ -28,6 +29,7 @@ export class AddItemCompraDto {
     { maxDecimalPlaces: 3 },
     { message: 'formato de quantidade é inválido' },
   )
+  @IsPositive({ message: 'A quantidade deve ser maior que zero ' })
   quantidade: number;
 
   @Field(() => String, {
@@ -42,5 +44,11 @@ export class AddItemCompraDto {
     { maxDecimalPlaces: 2 },
     { message: 'formato do preço médio inválido' },
   )
+  @IsPositive({ message: 'A quantidade deve ser maior que zero' })
   precoUnidade: number;
+
+  @Field(() => EGramatura)
+  @ApiProperty({ type: String, enum: EGramatura })
+  @IsEnum(EGramatura, { message: 'Valor da gramatura não é valido' })
+  gramatura: EGramatura;
 }

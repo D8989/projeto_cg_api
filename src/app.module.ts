@@ -7,10 +7,7 @@ import { AppResolver } from './app.resolver';
 import { ConfigModule } from './config/config.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from './config/config.service';
-import { ProdutoModule } from './produto/produto.module';
-import { CompraModule } from './compra/compra.module';
-import { UsuarioModule } from './usuario/usuario.module';
-import { PagamentoModule } from './pagamento/pagamento.module';
+import { ControlCompraModule } from './control-compra/control-compra.module';
 
 @Module({
   imports: [
@@ -38,10 +35,7 @@ import { PagamentoModule } from './pagamento/pagamento.module';
       inject: [ConfigService],
     }),
     ConfigModule,
-    ProdutoModule,
-    CompraModule,
-    UsuarioModule,
-    PagamentoModule,
+    ControlCompraModule,
   ],
   controllers: [AppController],
   providers: [AppService, AppResolver],

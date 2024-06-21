@@ -46,7 +46,7 @@ export class CompraEntity {
   @JoinColumn({ name: 'loja_id' })
   loja: LojaEntity;
 
-  @OneToMany(() => ItemCompraEntity, (item) => item.produto)
+  @OneToMany(() => ItemCompraEntity, (item) => item.compra)
   itens: ItemCompraEntity[];
 
   constructor(partial: Partial<CompraEntity>) {
