@@ -39,7 +39,7 @@ export class ProdutoService {
       }),
       this.itemBaseService.findOne(itemBaseId, {
         select: ['id', 'nome', 'descricao'],
-        customSelect: { tib: ['id', 'nome', 'descricao'] },
+        customSelect: { tib: { colums: ['id', 'nome', 'descricao'] } },
       }),
     ]);
 
@@ -182,6 +182,10 @@ export class ProdutoService {
     produto.atualizadoEm = now;
 
     await this.produtoRepo.saveOne(produto);
+  }
+
+  async findOneProduto(listOpt: ListProdutoOptionsDto) {
+    return await this.produtoRepo.findOne(listOpt.toIFindProduto());
   }
 
   private checkDto(dto: CreateProdutoInput | PutProdutoDto): RespBollClass {

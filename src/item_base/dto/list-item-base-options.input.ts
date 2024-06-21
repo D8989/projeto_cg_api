@@ -51,7 +51,7 @@ export class ListItemBaseOptionsInput extends BaseListItemBaseOptionsInput {
       nome: this.nome ? { value: this.nome, typeOperator: 'ilike' } : undefined,
       select: ['id', 'nome', 'descricao'],
       customSelect: {
-        tib: ['id', 'nome', 'descricao'],
+        tib: { colums: ['id', 'nome', 'descricao'] },
       },
     };
   }

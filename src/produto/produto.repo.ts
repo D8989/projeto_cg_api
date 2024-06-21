@@ -266,22 +266,28 @@ export class ProdutoRepo
       }
 
       if (joins.marca) {
-        opt.customSelect[this.mAlias] = ArrayFunctions.uniqueArray(
-          opt.customSelect[this.mAlias] || [],
-          ['id', 'nome', 'descricao'],
-        );
+        opt.customSelect[this.mAlias] = {
+          colums: ArrayFunctions.uniqueArray(
+            opt.customSelect[this.mAlias].colums || [],
+            ['id', 'nome', 'descricao'],
+          ),
+        };
       }
       if (joins.item) {
-        opt.customSelect[this.ibAlias] = ArrayFunctions.uniqueArray(
-          opt.customSelect[this.ibAlias] || [],
-          ['id', 'nome', 'descricao'],
-        );
+        opt.customSelect[this.ibAlias] = {
+          colums: ArrayFunctions.uniqueArray(
+            opt.customSelect[this.ibAlias].colums || [],
+            ['id', 'nome', 'descricao'],
+          ),
+        };
 
         if (joins.tipoItem) {
-          opt.customSelect[this.tibAlias] = ArrayFunctions.uniqueArray(
-            opt.customSelect[this.tibAlias] || [],
-            ['id', 'nome'],
-          );
+          opt.customSelect[this.tibAlias] = {
+            colums: ArrayFunctions.uniqueArray(
+              opt.customSelect[this.tibAlias].colums || [],
+              ['id', 'nome'],
+            ),
+          };
         }
       }
     }

@@ -1,12 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CompraEntity } from './compra.entity';
-import {
-  Brackets,
-  EntityManager,
-  Repository,
-  SelectQueryBuilder,
-} from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ARepo } from 'src/common/classes/repo.abstract';
 import { IOptCompra } from './interfaces/opt-compra.interface';
 import { RepoBasic } from 'src/common/interfaces/repo-basic.interface';
@@ -17,12 +12,14 @@ export class CompraRepo
   implements RepoBasic<CompraEntity, IOptCompra>
 {
   private lojaAlias: string;
+  private itemAlias: string;
   constructor(
     @InjectRepository(CompraEntity)
     private repo: Repository<CompraEntity>,
   ) {
-    super(['l']);
+    super(['l', 'i']);
     this.lojaAlias = 'l';
+    this.itemAlias = 'i';
   }
 
   async findAllAndCount(opt: IOptCompra): Promise<[CompraEntity[], number]> {
@@ -72,10 +69,29 @@ export class CompraRepo
     qb: SelectQueryBuilder<CompraEntity>,
     alias?: string | undefined,
     isInner?: boolean | undefined,
+    obj?: MyObjJoin,
   ): boolean {
     switch (alias) {
       case this.lojaAlias:
         qb.innerJoin(`${qb.alias}.loja`, this.lojaAlias);
+        return true;
+
+      case this.itemAlias:
+        if (isInner) {
+          qb.innerJoin(
+            `${qb.alias}.itens`,
+            this.itemAlias,
+            obj?.query,
+            obj?.parameters,
+          );
+        } else {
+          qb.leftJoin(
+            `${qb.alias}.itens`,
+            this.itemAlias,
+            obj?.query,
+            obj?.parameters,
+          );
+        }
         return true;
 
       default:
@@ -94,7 +110,7 @@ export class CompraRepo
     qb: SelectQueryBuilder<CompraEntity>,
     opt: IOptCompra,
   ): void {
-    const { ids, ignoredId } = opt;
+    const { ids, ignoredId, itemProdutoIds } = opt;
     const alias = qb.alias;
     qb.where(`${alias}.desativadoEm IS NULL`);
 
@@ -104,14 +120,12 @@ export class CompraRepo
     if (ignoredId) {
       qb.andWhere(`${alias}.id <> :ignoredId`, { ignoredId });
     }
-  }
-
-  protected override buildCustomSelect(opt: IOptCompra): void {
-    const { withLoja } = opt;
-    if (withLoja) {
-      opt.customSelect = {
-        l: ['id', 'nome'],
-      };
+    if (itemProdutoIds && itemProdutoIds.length > 0) {
+      qb.andWhere(`${this.itemAlias}.produtoId IN(:...itemProdutoIds)`, {
+        itemProdutoIds,
+      });
     }
   }
+
+  protected override buildCustomSelect(opt: IOptCompra): void {}
 }
