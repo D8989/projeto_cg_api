@@ -13,6 +13,7 @@ import { ListCompraOptionsDto } from 'src/compra/dto/list-compra-options.dto';
 import { DataSource } from 'typeorm';
 import { ListProdutoOptionsDto } from 'src/produto/dto/list-produto-options.dto';
 import { ListItemCompraOptionsDto } from 'src/item-compra/dto/list-item-compra-options.dto';
+import { ItemCompraEntity } from 'src/item-compra/item-compra.entity';
 
 @Injectable()
 export class ControlCompraService {
@@ -26,8 +27,6 @@ export class ControlCompraService {
   ) {}
 
   async addItem(dto: AddItemCompraDto) {
-    console.log(dto);
-
     const { compraId, produtoId, quantidade, precoUnidade, gramatura } = dto;
     const [compra, produto] = await Promise.all([
       this.compraService.findOneCompra(
@@ -90,9 +89,12 @@ export class ControlCompraService {
     await queryRunner.startTransaction();
 
     try {
+      let item: ItemCompraEntity;
+      const now = new Date();
+
       if (itensEqual.length === 1) {
         const itemFound = itensEqual[0];
-        await this.itemCompraService.update(
+        item = await this.itemCompraService.update(
           itemFound.id,
           {
             quantidade: quantidade + itemFound.quantidade,
@@ -101,7 +103,7 @@ export class ControlCompraService {
           { ignoreRules: true },
         );
       } else {
-        await this.itemCompraService.create(
+        item = await this.itemCompraService.create(
           {
             compraId: compraId,
             produtoId: produtoId,
@@ -114,7 +116,14 @@ export class ControlCompraService {
         );
       }
 
+      await this.compraService.updateColumns(
+        compra.id,
+        { atualizadoEm: now },
+        queryRunner.manager,
+      );
+
       await queryRunner.commitTransaction();
+      return item;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new BadRequestException(error.message);

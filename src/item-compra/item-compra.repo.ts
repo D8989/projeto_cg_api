@@ -56,7 +56,7 @@ export class ItemCompraRepo
     qb: SelectQueryBuilder<ItemCompraEntity>,
     opt: IOptItemCompra,
   ): void {
-    const { compraIds, produtoIds } = opt;
+    const { compraIds, produtoIds, ignoredId } = opt;
 
     qb.where('1=1');
     if (produtoIds && produtoIds.length > 0) {
@@ -64,6 +64,9 @@ export class ItemCompraRepo
     }
     if (compraIds && compraIds.length > 0) {
       qb.andWhere(`${qb.alias}.compraId IN(:...compraIds)`, { compraIds });
+    }
+    if (ignoredId) {
+      qb.andWhere(`${qb.alias}.id <> :ignoredId`, { ignoredId });
     }
   }
 

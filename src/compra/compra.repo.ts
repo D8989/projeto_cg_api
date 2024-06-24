@@ -5,6 +5,7 @@ import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ARepo } from 'src/common/classes/repo.abstract';
 import { IOptCompra } from './interfaces/opt-compra.interface';
 import { RepoBasic } from 'src/common/interfaces/repo-basic.interface';
+import { CompraMask } from './dto/compra.mask';
 
 @Injectable()
 export class CompraRepo
@@ -63,6 +64,11 @@ export class CompraRepo
       .select('COALESCE(MAX(c.codigo), 0) + 1', 'nextCodigo')
       .getRawOne()
       .then((resp) => resp.nextCodigo);
+  }
+
+  async update(id: number, compraPropertys: CompraMask, ent: EntityManager) {
+    const repoEnt = ent?.getRepository(CompraEntity) || this.repo;
+    await repoEnt.update({ id }, { ...compraPropertys });
   }
 
   protected override buildSpecificJoin(

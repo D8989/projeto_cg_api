@@ -8,6 +8,7 @@ import { RespBollClass } from 'src/common/classes/resp-boll.class';
 import { OptFuncGeral } from 'src/common/classes/opt-func-geral.class';
 import { CreateItemCompraDto } from './dto/create-item-compra.dto';
 import { ListItemCompraOptionsDto } from './dto/list-item-compra-options.dto';
+import { ItemCompraMask } from './dto/item-compra.mask';
 
 @Injectable()
 export class ItemCompraService {
@@ -46,6 +47,25 @@ export class ItemCompraService {
         ent,
       );
     }
+
+    const validDuplicata = await this.checkDuplicada(
+      {
+        compraId: updateDto.compraId,
+        produtoId: updateDto.produtoId,
+      },
+      id,
+    );
+    if (!validDuplicata.flag) {
+      throw new BadRequestException(validDuplicata.message);
+    }
+
+    return await this.itemCompraRepo.save(
+      new ItemCompraEntity({
+        ...dto,
+        id: id,
+      }),
+      ent,
+    );
   }
 
   async create(
@@ -66,6 +86,21 @@ export class ItemCompraService {
         ent,
       );
     }
+
+    const validDuplicata = await this.checkDuplicada({
+      compraId: createDto.compraId,
+      produtoId: createDto.produtoId,
+    });
+    if (!validDuplicata.flag) {
+      throw new BadRequestException(validDuplicata.message);
+    }
+
+    return await this.itemCompraRepo.save(
+      new ItemCompraEntity({
+        ...createDto,
+      }),
+      ent,
+    );
   }
 
   async findOneItemCompra(listOpt: ListItemCompraOptionsDto) {
@@ -88,6 +123,29 @@ export class ItemCompraService {
       };
     }
 
+    return { flag: true, message: '' };
+  }
+
+  async checkDuplicada(
+    itemCompraDto: ItemCompraMask,
+    ignoredId?: number,
+  ): Promise<RespBollClass> {
+    const { compraId, produtoId } = itemCompraDto;
+    if (compraId && produtoId) {
+      const itemCompraFound = await this.itemCompraRepo.findOne({
+        compraIds: [compraId],
+        produtoIds: [produtoId],
+        select: ['id'],
+        ignoredId,
+      });
+      if (itemCompraFound) {
+        return {
+          flag: false,
+          message:
+            'Item-Compra com a compra e produto informados já existe no sistema',
+        };
+      }
+    }
     return { flag: true, message: '' };
   }
 }

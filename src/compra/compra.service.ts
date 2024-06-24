@@ -14,6 +14,7 @@ import { EntityManager } from 'typeorm';
 import { ViewListCompraDto } from './dto/view-list-compra.dto';
 import { PutCompraInput } from './dto/put-compra.input';
 import { ItemCompraService } from 'src/item-compra/item-compra.service';
+import { CompraMask } from './dto/compra.mask';
 
 @Injectable()
 export class CompraService {
@@ -66,6 +67,7 @@ export class CompraService {
       }),
     );
   }
+
   async update(id: number, dto: PutCompraInput, ent?: EntityManager) {
     const compra = await this.compraRepo.findOne({ ids: [id] });
     if (!compra) {
@@ -114,6 +116,14 @@ export class CompraService {
 
   async findOneCompra(listOpt: ListCompraOptionsDto) {
     return await this.compraRepo.findOne(listOpt.toIOptCompra());
+  }
+
+  async updateColumns(
+    id: number,
+    compraColumns: CompraMask,
+    ent: EntityManager,
+  ) {
+    return await this.compraRepo.update(id, compraColumns, ent);
   }
 
   checkDto(dto: CreateCompraInput): RespBollClass {
