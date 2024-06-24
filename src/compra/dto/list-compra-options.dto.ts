@@ -37,6 +37,7 @@ class BaseListCompraOptionsDto extends ListOptionsDto {
 
   withLoja?: boolean;
   withBasicSelect?: boolean;
+  withValorTotal?: boolean;
 
   constructor(partial?: Partial<BaseListCompraOptionsDto>) {
     super(partial);
@@ -61,13 +62,14 @@ export class ListCompraOptionsDto extends BaseListCompraOptionsDto {
       customSelect: this.buildCustomSelect(),
       select: this.withBasicSelect ? this.basicSelect : undefined,
       itemProdutoIds: this.itens?.produtoIds,
+      selectValorTotal: this.withValorTotal,
     };
   }
 
   private buildCustomSelect(): MyObject | undefined {
     const obj: MyObject = {};
 
-    if (this.withLoja) {
+    if (this.withLoja || this.lojaNome) {
       obj['l'] = {
         colums: ['id', 'nome'],
         isInner: true,

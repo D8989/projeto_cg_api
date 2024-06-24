@@ -26,16 +26,17 @@ export class CompraService {
 
   async listPaginado(opt: ListCompraOptionsDto) {
     opt.limite = opt.limite || 100;
-
-    return await this.compraRepo.findAllAndCount(opt.toIOptCompra());
+    opt.withValorTotal = true;
+    return await this.compraRepo.findAllAndCountWithValor(opt.toIOptCompra());
   }
 
   async getViewListCompraPaginado(
     opt: ListCompraOptionsDto,
   ): Promise<[ViewListCompraDto[], number]> {
     opt.withLoja = true;
+    opt.withValorTotal = true;
     return await this.compraRepo
-      .findAllAndCount(opt.toIOptCompra())
+      .findAllAndCountWithValor(opt.toIOptCompra())
       .then((resp) => {
         return [resp[0].map((r) => this.entityToListView(r)), resp[1]];
       });
@@ -144,7 +145,7 @@ export class CompraService {
       codigo: compra.codigo,
       dataCompra: compra.dataCompra,
       lojaNome: compra.loja.nome,
-      valorTotal: 0,
+      valorTotal: compra.valorTotal,
     });
   }
 }

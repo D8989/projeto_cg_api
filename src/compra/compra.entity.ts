@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import 'dotenv/config';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { LojaEntity } from 'src/loja/loja.entity';
 import { ItemCompraEntity } from 'src/item-compra/item-compra.entity';
 
@@ -48,6 +48,10 @@ export class CompraEntity {
 
   @OneToMany(() => ItemCompraEntity, (item) => item.compra)
   itens: ItemCompraEntity[];
+
+  @Field({ description: 'Variável virtual', nullable: true })
+  @ApiPropertyOptional({ type: Number, description: 'Variável virtual' })
+  valorTotal: number;
 
   constructor(partial: Partial<CompraEntity>) {
     Object.assign(this, partial);
