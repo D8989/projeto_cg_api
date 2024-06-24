@@ -84,36 +84,42 @@ export class ControlCompraService {
 
     console.log(itensEqual);
 
-    this.dataSource
-      .transaction(async (t) => {
-        const now = new Date();
+    const queryRunner = this.dataSource.createQueryRunner();
 
-        if (itensEqual.length === 1) {
-          const itemFound = itensEqual[0];
-          await this.itemCompraService.update(
-            itemFound.id,
-            {
-              quantidade: quantidade + itemFound.quantidade,
-            },
-            t,
-            { ignoreRules: true },
-          );
-        } else {
-          await this.itemCompraService.create(
-            {
-              compraId: compraId,
-              produtoId: produtoId,
-              custo: precoUnidade,
-              gramatura: gramatura,
-              quantidade: quantidade,
-            },
-            t,
-            { ignoreRules: true },
-          );
-        }
-      })
-      .catch((bdErro) => {
-        throw new BadRequestException(bdErro.message);
-      });
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      if (itensEqual.length === 1) {
+        const itemFound = itensEqual[0];
+        await this.itemCompraService.update(
+          itemFound.id,
+          {
+            quantidade: quantidade + itemFound.quantidade,
+          },
+          queryRunner.manager,
+          { ignoreRules: true },
+        );
+      } else {
+        await this.itemCompraService.create(
+          {
+            compraId: compraId,
+            produtoId: produtoId,
+            custo: precoUnidade,
+            gramatura: gramatura,
+            quantidade: quantidade,
+          },
+          queryRunner.manager,
+          { ignoreRules: true },
+        );
+      }
+
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new BadRequestException(error.message);
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

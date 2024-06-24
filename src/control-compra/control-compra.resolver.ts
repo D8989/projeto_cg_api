@@ -20,7 +20,7 @@ export class ControlCompraResolver {
         message: 'Item adicionado à compra com sucesso',
       });
     } catch (error) {
-      throw new BadRequestException(error.message);
+      throw error;
     }
   }
 }
