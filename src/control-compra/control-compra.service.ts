@@ -12,7 +12,7 @@ import { AddItemCompraDto } from './dto/add-item-compra.dto';
 import { ListCompraOptionsDto } from 'src/compra/dto/list-compra-options.dto';
 import { DataSource } from 'typeorm';
 import { ListProdutoOptionsDto } from 'src/produto/dto/list-produto-options.dto';
-import { ItemCompraEntity } from 'src/item-compra/item-compra.entity';
+import { ListItemCompraOptionsDto } from 'src/item-compra/dto/list-item-compra-options.dto';
 
 @Injectable()
 export class ControlCompraService {
@@ -55,19 +55,7 @@ export class ControlCompraService {
         'Produto Não encontrado para adicionar um item',
       );
     }
-
-    console.log(compra);
-
-    // const novoItem = new ItemCompraEntity({
-    //   compraId: compra.id,
-    //   produtoId: produto.id,
-    //   custo: precoUnidade,
-    //   gramatura: gramatura,
-    //   quantidade: quantidade,
-    // });
     const itensEqual = compra.itens.filter((item) => {
-      console.log(item);
-
       return (
         item.compraId === compraId &&
         item.produtoId === produtoId &&
@@ -82,7 +70,19 @@ export class ControlCompraService {
       );
     }
 
-    console.log(itensEqual);
+    if (itensEqual.length === 0) {
+      const itemDuplicado = await this.itemCompraService.findOneItemCompra(
+        new ListItemCompraOptionsDto({
+          compraIds: [compraId],
+          produtoIds: [produtoId],
+        }),
+      );
+      if (itemDuplicado) {
+        throw new BadRequestException(
+          `Item informado já existe para a compra "${compra.codigo}" e do produto "${produto.nome}"`,
+        );
+      }
+    }
 
     const queryRunner = this.dataSource.createQueryRunner();
 

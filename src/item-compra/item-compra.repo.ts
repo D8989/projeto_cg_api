@@ -5,12 +5,11 @@ import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ARepo } from 'src/common/classes/repo.abstract';
 import { IOptItemCompra } from './interfaces/opt-item-compra.interface';
 import { RepoBasic } from 'src/common/interfaces/repo-basic.interface';
-import { ItemBaseEntity } from 'src/item_base/item_base.entity';
 
 @Injectable()
 export class ItemCompraRepo
   extends ARepo<ItemCompraEntity, IOptItemCompra>
-  implements RepoBasic<ItemBaseEntity, IOptItemCompra>
+  implements RepoBasic<ItemCompraEntity, IOptItemCompra>
 {
   constructor(
     @InjectRepository(ItemCompraEntity)
@@ -21,16 +20,24 @@ export class ItemCompraRepo
 
   async findAllAndCount(
     opt: IOptItemCompra,
-  ): Promise<[ItemBaseEntity[], number]> {
+  ): Promise<[ItemCompraEntity[], number]> {
     return [[], 0];
   }
 
-  async findAll(opt: IOptItemCompra): Promise<ItemBaseEntity[]> {
+  async findAll(opt: IOptItemCompra): Promise<ItemCompraEntity[]> {
     return [];
   }
 
-  async findOne(opt: IOptItemCompra): Promise<ItemBaseEntity | null> {
-    return null;
+  async findOne(opt: IOptItemCompra): Promise<ItemCompraEntity | null> {
+    const query = this.repo.createQueryBuilder('ic');
+
+    this.buildCustomSelect(opt);
+
+    this.buildSelect(query, opt);
+    this.buildJoin(query, opt);
+    this.buildWhere(query, opt);
+
+    return await query.getOne();
   }
 
   async updateDireto(id: number, item: ItemCompraEntity, ent?: EntityManager) {
@@ -48,7 +55,17 @@ export class ItemCompraRepo
   protected override buildWhere(
     qb: SelectQueryBuilder<ItemCompraEntity>,
     opt: IOptItemCompra,
-  ): void {}
+  ): void {
+    const { compraIds, produtoIds } = opt;
+
+    qb.where('1=1');
+    if (produtoIds && produtoIds.length > 0) {
+      qb.andWhere(`${qb.alias}.produtoId IN(:...produtoIds)`, { produtoIds });
+    }
+    if (compraIds && compraIds.length > 0) {
+      qb.andWhere(`${qb.alias}.compraId IN(:...compraIds)`, { compraIds });
+    }
+  }
 
   protected override buildOrder(
     qb: SelectQueryBuilder<ItemCompraEntity>,

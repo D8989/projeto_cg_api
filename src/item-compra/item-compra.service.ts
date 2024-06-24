@@ -7,6 +7,7 @@ import { EntityManager } from 'typeorm';
 import { RespBollClass } from 'src/common/classes/resp-boll.class';
 import { OptFuncGeral } from 'src/common/classes/opt-func-geral.class';
 import { CreateItemCompraDto } from './dto/create-item-compra.dto';
+import { ListItemCompraOptionsDto } from './dto/list-item-compra-options.dto';
 
 @Injectable()
 export class ItemCompraService {
@@ -65,6 +66,10 @@ export class ItemCompraService {
         ent,
       );
     }
+  }
+
+  async findOneItemCompra(listOpt: ListItemCompraOptionsDto) {
+    return await this.itemCompraRepo.findOne(listOpt.toIOptItemCompra());
   }
 
   checkDto(dto: UpdateItemCompraDto | CreateItemCompraDto): RespBollClass {
