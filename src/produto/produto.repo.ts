@@ -268,7 +268,7 @@ export class ProdutoRepo
       if (joins.marca) {
         opt.customSelect[this.mAlias] = {
           colums: ArrayFunctions.uniqueArray(
-            opt.customSelect[this.mAlias].colums || [],
+            opt.customSelect[this.mAlias]?.colums || [],
             ['id', 'nome', 'descricao'],
           ),
         };
@@ -276,7 +276,7 @@ export class ProdutoRepo
       if (joins.item) {
         opt.customSelect[this.ibAlias] = {
           colums: ArrayFunctions.uniqueArray(
-            opt.customSelect[this.ibAlias].colums || [],
+            opt.customSelect[this.ibAlias]?.colums || [],
             ['id', 'nome', 'descricao'],
           ),
         };
@@ -284,7 +284,7 @@ export class ProdutoRepo
         if (joins.tipoItem) {
           opt.customSelect[this.tibAlias] = {
             colums: ArrayFunctions.uniqueArray(
-              opt.customSelect[this.tibAlias].colums || [],
+              opt.customSelect[this.tibAlias]?.colums || [],
               ['id', 'nome'],
             ),
           };
