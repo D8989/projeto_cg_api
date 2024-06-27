@@ -32,6 +32,7 @@ class BaseListCompraOptionsDto extends ListOptionsDto {
   withItens?: {
     produtoIds?: number[];
     joinProdutoIds?: number[];
+    ids?: number[];
     isInner?: boolean;
     withProduto?: boolean;
   };
@@ -88,6 +89,13 @@ export class ListCompraOptionsDto extends BaseListCompraOptionsDto {
         ],
         isInner: this.withItens.isInner,
       };
+
+      if (this.withItens.ids && this.withItens.ids.length > 0) {
+        obj['i'].joinInfo = {
+          query: 'i.id IN (:...iIds)',
+          parameters: { iIds: this.withItens.ids },
+        };
+      }
 
       if (
         this.withItens.joinProdutoIds &&

@@ -14,6 +14,9 @@ import { DataSource } from 'typeorm';
 import { ListProdutoOptionsDto } from 'src/produto/dto/list-produto-options.dto';
 import { ListItemCompraOptionsDto } from 'src/item-compra/dto/list-item-compra-options.dto';
 import { ItemCompraEntity } from 'src/item-compra/item-compra.entity';
+import { RmItemCompraDto } from './dto/rm-item-compra.dto';
+import { CompraEntity } from 'src/compra/compra.entity';
+import { ArrayFunctions } from 'src/common/functions/array-functions.class';
 
 @Injectable()
 export class ControlCompraService {
@@ -124,6 +127,66 @@ export class ControlCompraService {
 
       await queryRunner.commitTransaction();
       return item;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new BadRequestException(error.message);
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async rmItemCompra(dto: RmItemCompraDto): Promise<CompraEntity> {
+    const { compraId, itemCompraIds } = dto;
+
+    const listOpt = new ListCompraOptionsDto({
+      ids: [compraId],
+      withItens: { isInner: false, ids: itemCompraIds },
+    });
+    const compra = await this.compraService.findOneCompra(listOpt);
+    if (!compra) {
+      throw new NotFoundException(
+        'Compra não encontrada para remoção dos itens',
+      );
+    }
+    if (compra.itens.length === 0) {
+      throw new NotFoundException('Nenhum item da compra não encontrado');
+    }
+    if (compra.itens.length !== itemCompraIds.length) {
+      throw new NotFoundException(
+        'Alguns itens da compra não foram encontrados',
+      );
+    }
+    if (
+      !ArrayFunctions.isEqualById(
+        compra.itens,
+        itemCompraIds.map((id) => ({ id })),
+      )
+    ) {
+      throw new NotFoundException(
+        'Itens encontrados são diferentes dos informados',
+      );
+    }
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    const now = new Date();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const itensIdsToDelte = compra.itens.map((i) => i.id);
+      await this.itemCompraService.hardDeleteByIds(
+        itensIdsToDelte,
+        queryRunner.manager,
+      );
+
+      await this.compraService.updateColumns(
+        compra.id,
+        { atualizadoEm: now },
+        queryRunner.manager,
+      );
+
+      await queryRunner.commitTransaction();
+      return compra;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new BadRequestException(error.message);

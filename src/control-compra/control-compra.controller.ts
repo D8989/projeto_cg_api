@@ -1,4 +1,11 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  ParseIntPipe,
+  Post,
+} from '@nestjs/common';
 import { ApiBody, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ControlCompraService } from './control-compra.service';
 import { RespMessageClass } from 'src/common/classes/resp-message.class';
@@ -19,6 +26,27 @@ export class ControlCompraController {
       return new RespMessageClass({
         id: dto.compraId,
         message: 'Item adicionado com sucesso',
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Delete('compra/:compra_id/item-compra/:id')
+  @ApiOkResponse({ type: RespMessageClass })
+  async rmItemCompra(
+    @Param('compra_id', ParseIntPipe) compraId: number,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    try {
+      await this.controlCompraService.rmItemCompra({
+        compraId,
+        itemCompraIds: [id],
+      });
+
+      return new RespMessageClass({
+        id: compraId,
+        message: 'Item removido com sucesso',
       });
     } catch (error) {
       throw error;

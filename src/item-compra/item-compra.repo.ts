@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ItemCompraEntity } from './item-compra.entity';
-import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, In, Repository, SelectQueryBuilder } from 'typeorm';
 import { ARepo } from 'src/common/classes/repo.abstract';
 import { IOptItemCompra } from './interfaces/opt-item-compra.interface';
 import { RepoBasic } from 'src/common/interfaces/repo-basic.interface';
@@ -48,6 +48,12 @@ export class ItemCompraRepo
   async save(item: ItemCompraEntity, ent?: EntityManager) {
     const repoEnt = ent?.getRepository(ItemCompraEntity) || this.repo;
     return await repoEnt.save(item);
+  }
+
+  async hardDelete(ids: number[], ent: EntityManager) {
+    if (ids.length === 0) return;
+    const repoEnt = ent?.getRepository(ItemCompraEntity) || this.repo;
+    repoEnt.delete({ id: In(ids) });
   }
 
   protected override buildCustomSelect(opt: IOptItemCompra): void {}

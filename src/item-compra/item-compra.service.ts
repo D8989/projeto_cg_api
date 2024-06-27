@@ -107,6 +107,13 @@ export class ItemCompraService {
     return await this.itemCompraRepo.findOne(listOpt.toIOptItemCompra());
   }
 
+  async hardDeleteByIds(ids: number[], ent: EntityManager) {
+    if (ids.length === 0) {
+      throw new BadRequestException('Nenhum item foi informado para remoção');
+    }
+    await this.itemCompraRepo.hardDelete(ids, ent);
+  }
+
   checkDto(dto: UpdateItemCompraDto | CreateItemCompraDto): RespBollClass {
     const { custo, quantidade } = dto;
     if (custo && custo <= 0) {
