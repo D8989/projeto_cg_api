@@ -9,6 +9,7 @@ import 'dotenv/config';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { ApiProperty } from '@nestjs/swagger';
 import { UsuarioEntity } from 'src/usuario/usuario.entity';
+import { NumberFunctions } from 'src/common/functions/number-functions.class';
 
 @Entity('pagamento', { schema: process.env.SCHEMA })
 @ObjectType()
@@ -26,7 +27,9 @@ export class PagamentoEntity {
 
   @Field(() => Number)
   @ApiProperty({ type: Number })
-  @Column('numeric')
+  @Column('numeric', {
+    transformer: NumberFunctions.numericTransform(),
+  })
   valor: number;
 
   @Field(() => String)

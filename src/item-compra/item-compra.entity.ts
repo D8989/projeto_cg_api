@@ -10,6 +10,7 @@ import { Field, Int } from '@nestjs/graphql';
 import { ApiProperty } from '@nestjs/swagger';
 import { ProdutoEntity } from 'src/produto/produto.entity';
 import { CompraEntity } from 'src/compra/compra.entity';
+import { NumberFunctions } from 'src/common/functions/number-functions.class';
 
 @Entity('item_compra', { schema: process.env.SCHEMA })
 export class ItemCompraEntity {
@@ -27,28 +28,14 @@ export class ItemCompraEntity {
   @Field(() => Number)
   @ApiProperty({ type: Number })
   @Column('numeric', {
-    transformer: {
-      from(value: string) {
-        return parseFloat(value);
-      },
-      to(value: number) {
-        return value.toString();
-      },
-    },
+    transformer: NumberFunctions.numericTransform(),
   })
   quantidade: number;
 
   @Field(() => Number)
   @ApiProperty({ type: Number })
   @Column('numeric', {
-    transformer: {
-      from(value: string) {
-        return parseFloat(value);
-      },
-      to(value: number) {
-        return value.toString();
-      },
-    },
+    transformer: NumberFunctions.numericTransform(),
   })
   custo: number;
 
