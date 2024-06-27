@@ -33,7 +33,7 @@ export class ControlCompraService {
         new ListCompraOptionsDto({
           ids: [compraId],
           withBasicSelect: true,
-          itens: { joinProdutoIds: [produtoId], isInner: false },
+          withItens: { joinProdutoIds: [produtoId], isInner: false },
         }),
       ),
       this.produtoService.findOneProduto(

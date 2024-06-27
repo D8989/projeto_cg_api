@@ -29,10 +29,11 @@ class BaseListCompraOptionsDto extends ListOptionsDto {
   @IsOptional()
   data?: Date;
 
-  itens?: {
+  withItens?: {
     produtoIds?: number[];
     joinProdutoIds?: number[];
     isInner?: boolean;
+    withProduto?: boolean;
   };
 
   withLoja?: boolean;
@@ -61,7 +62,7 @@ export class ListCompraOptionsDto extends BaseListCompraOptionsDto {
         : undefined,
       customSelect: this.buildCustomSelect(),
       select: this.withBasicSelect ? this.basicSelect : undefined,
-      itemProdutoIds: this.itens?.produtoIds,
+      itemProdutoIds: this.withItens?.produtoIds,
       selectValorTotal: this.withValorTotal,
     };
   }
@@ -75,28 +76,33 @@ export class ListCompraOptionsDto extends BaseListCompraOptionsDto {
         isInner: true,
       };
     }
-    if (this.itens) {
+    if (this.withItens) {
+      obj['i'] = {
+        colums: [
+          'id',
+          'produtoId',
+          'compraId',
+          'quantidade',
+          'gramatura',
+          'custo',
+        ],
+        isInner: this.withItens.isInner,
+      };
+
       if (
-        (this.itens.produtoIds && this.itens.produtoIds.length > 0) ||
-        (this.itens.joinProdutoIds && this.itens.joinProdutoIds.length > 0)
+        this.withItens.joinProdutoIds &&
+        this.withItens.joinProdutoIds.length > 0
       ) {
-        obj['i'] = {
-          colums: [
-            'id',
-            'produtoId',
-            'compraId',
-            'quantidade',
-            'gramatura',
-            'custo',
-          ],
-          isInner: this.itens.isInner,
+        obj['i'].joinInfo = {
+          query: 'i.produtoId IN(:...pIds)',
+          parameters: { pIds: this.withItens.joinProdutoIds },
         };
       }
 
-      if (this.itens.joinProdutoIds && this.itens.joinProdutoIds.length > 0) {
-        obj['i'].joinInfo = {
-          query: 'i.produtoId IN(:...pIds)',
-          parameters: { pIds: this.itens.joinProdutoIds },
+      if (this.withItens.withProduto) {
+        obj['p'] = {
+          colums: ['id', 'nome'],
+          isInner: this.withItens.isInner,
         };
       }
     }

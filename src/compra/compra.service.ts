@@ -15,6 +15,7 @@ import { ViewListCompraDto } from './dto/view-list-compra.dto';
 import { PutCompraInput } from './dto/put-compra.input';
 import { ItemCompraService } from 'src/item-compra/item-compra.service';
 import { CompraMask } from './dto/compra.mask';
+import { ViewCompraRest } from './dto/view-compra-rest.dto';
 
 @Injectable()
 export class CompraService {
@@ -125,6 +126,20 @@ export class CompraService {
     ent: EntityManager,
   ) {
     return await this.compraRepo.update(id, compraColumns, ent);
+  }
+
+  async findCompraRest(id: number) {
+    const listOpt = new ListCompraOptionsDto({
+      ids: [id],
+      withLoja: true,
+      withItens: { isInner: false, withProduto: true },
+    });
+    const compra = await this.compraRepo.findOne(listOpt.toIOptCompra());
+    if (!compra) {
+      throw new NotFoundException(`Compra não encontrada para visualização`);
+    }
+
+    return new ViewCompraRest(compra);
   }
 
   checkDto(dto: CreateCompraInput): RespBollClass {

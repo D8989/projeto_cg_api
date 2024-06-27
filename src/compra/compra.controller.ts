@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   ParseIntPipe,
   Post,
@@ -15,6 +16,7 @@ import { ViewListCompraDto } from './dto/view-list-compra.dto';
 import { CreateCompraInput } from './dto/create-compra.input';
 import { RespMessageClass } from 'src/common/classes/resp-message.class';
 import { PutCompraInput } from './dto/put-compra.input';
+import { ViewCompraRest } from './dto/view-compra-rest.dto';
 
 @Controller('compra')
 @ApiTags('Compra')
@@ -84,6 +86,16 @@ export class CompraController {
         id: id,
         message: 'Compra removida com sucesso',
       });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Get('/:id')
+  @ApiOkResponse({ type: ViewCompraRest })
+  async visualisarCompra(@Param('id', ParseIntPipe) id: number) {
+    try {
+      return await this.compraService.findCompraRest(id);
     } catch (error) {
       throw error;
     }

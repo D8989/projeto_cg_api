@@ -17,13 +17,15 @@ export class CompraRepo
 {
   private lojaAlias: string;
   private itemAlias: string;
+  private itemProdAlias: string;
   constructor(
     @InjectRepository(CompraEntity)
     private repo: Repository<CompraEntity>,
   ) {
-    super(['l', 'i']);
+    super(['l', 'i', 'p']);
     this.lojaAlias = 'l';
     this.itemAlias = 'i';
+    this.itemProdAlias = 'p';
   }
 
   async findAllAndCount(opt: IOptCompra): Promise<[CompraEntity[], number]> {
@@ -146,6 +148,13 @@ export class CompraRepo
           );
         }
         return true;
+
+      case this.itemProdAlias:
+        if (isInner) {
+          qb.innerJoin(`${this.itemAlias}.produto`, this.itemProdAlias);
+        } else {
+          qb.leftJoin(`${this.itemAlias}.produto`, this.itemProdAlias);
+        }
 
       default:
         return false;
