@@ -10,6 +10,7 @@ import { ApiBody, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ControlCompraService } from './control-compra.service';
 import { RespMessageClass } from 'src/common/classes/resp-message.class';
 import { AddItemCompraDto } from './dto/add-item-compra.dto';
+import { AddPagamentoDto } from './dto/add-pagamento.dto';
 
 @Controller('control-compra')
 @ApiTags('Controlador de Compras')
@@ -47,6 +48,22 @@ export class ControlCompraController {
       return new RespMessageClass({
         id: compraId,
         message: 'Item removido com sucesso',
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Post('/add-pagamento')
+  @ApiOkResponse({ type: RespMessageClass })
+  @ApiBody({ type: AddPagamentoDto })
+  async addPagamentoCompra(@Body() dto: AddPagamentoDto) {
+    try {
+      await this.controlCompraService.addPagamento(dto);
+
+      return new RespMessageClass({
+        id: dto.compraId,
+        message: 'Pagamento adicionado com sucesso',
       });
     } catch (error) {
       throw error;

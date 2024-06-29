@@ -18,14 +18,18 @@ export class CompraRepo
   private lojaAlias: string;
   private itemAlias: string;
   private itemProdAlias: string;
+  private pagamentoAlias: string;
+  private pagamentoUserAlias: string;
   constructor(
     @InjectRepository(CompraEntity)
     private repo: Repository<CompraEntity>,
   ) {
-    super(['l', 'i', 'p']);
+    super(['l', 'i', 'p', 'pag', 'pag_u']);
     this.lojaAlias = 'l';
     this.itemAlias = 'i';
     this.itemProdAlias = 'p';
+    this.pagamentoAlias = 'pag';
+    this.pagamentoUserAlias = 'pag_u';
   }
 
   async findAllAndCount(opt: IOptCompra): Promise<[CompraEntity[], number]> {
@@ -155,6 +159,21 @@ export class CompraRepo
         } else {
           qb.leftJoin(`${this.itemAlias}.produto`, this.itemProdAlias);
         }
+        return true;
+
+      case this.pagamentoAlias:
+        if (isInner) {
+          qb.innerJoin(`${qb.alias}.pagamentos`, this.pagamentoAlias).innerJoin(
+            `${this.pagamentoAlias}.usuario`,
+            this.pagamentoUserAlias,
+          );
+        } else {
+          qb.leftJoin(`${qb.alias}.pagamentos`, this.pagamentoAlias).leftJoin(
+            `${this.pagamentoAlias}.usuario`,
+            this.pagamentoUserAlias,
+          );
+        }
+        return true;
 
       default:
         return false;

@@ -40,6 +40,9 @@ class BaseListCompraOptionsDto extends ListOptionsDto {
   withLoja?: boolean;
   withBasicSelect?: boolean;
   withValorTotal?: boolean;
+  withPagamentos?: {
+    isInner?: boolean;
+  };
 
   constructor(partial?: Partial<BaseListCompraOptionsDto>) {
     super(partial);
@@ -113,6 +116,17 @@ export class ListCompraOptionsDto extends BaseListCompraOptionsDto {
           isInner: this.withItens.isInner,
         };
       }
+    }
+
+    if (this.withPagamentos) {
+      obj['pag'] = {
+        colums: ['id', 'valor', 'formaPagamento'],
+        isInner: this.withPagamentos.isInner,
+      };
+      obj['pag_u'] = {
+        colums: ['id', 'nome', 'nomeUnique'],
+        isInner: this.withPagamentos.isInner,
+      };
     }
 
     if (ObjectFunctions.isObjectEmpty(obj)) {

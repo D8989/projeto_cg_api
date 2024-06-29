@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsuarioEntity } from './usuario.entity';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ARepo } from 'src/common/classes/repo.abstract';
 import { IOptUsuario } from './dto/opt-usuario.interface';
 import { RepoBasic } from 'src/common/interfaces/repo-basic.interface';
@@ -27,7 +27,18 @@ export class UsuarioRepo
   }
 
   async findOne(opt: IOptUsuario): Promise<UsuarioEntity | null> {
-    return null;
+    const query = this.repo.createQueryBuilder('u');
+
+    this.buildSelect(query, opt);
+    this.buildJoin(query, opt);
+    this.buildWhere(query, opt);
+
+    return await query.getOne();
+  }
+
+  async save(user: UsuarioEntity, ent?: EntityManager) {
+    const entRepo = ent?.getRepository(UsuarioEntity) || this.repo;
+    return await entRepo.save(user);
   }
 
   protected override buildSpecificJoin(
@@ -46,7 +57,14 @@ export class UsuarioRepo
   protected override buildWhere(
     qb: SelectQueryBuilder<UsuarioEntity>,
     opt: IOptUsuario,
-  ): void {}
+  ): void {
+    const { nomeUnique } = opt;
+
+    qb.where('1=1');
+    if (nomeUnique) {
+      qb.andWhere(`${qb.alias}.nomeUnique = :nomeUnique`, { nomeUnique });
+    }
+  }
 
   protected override buildCustomSelect(opt: IOptUsuario): void {}
 }

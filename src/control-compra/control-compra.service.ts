@@ -17,6 +17,8 @@ import { ItemCompraEntity } from 'src/item-compra/item-compra.entity';
 import { RmItemCompraDto } from './dto/rm-item-compra.dto';
 import { CompraEntity } from 'src/compra/compra.entity';
 import { ArrayFunctions } from 'src/common/functions/array-functions.class';
+import { AddPagamentoDto } from './dto/add-pagamento.dto';
+import { StringFunctionsClass } from 'src/common/functions/string-functions.class';
 
 @Injectable()
 export class ControlCompraService {
@@ -187,6 +189,71 @@ export class ControlCompraService {
 
       await queryRunner.commitTransaction();
       return compra;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new BadRequestException(error.message);
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async addPagamento(dto: AddPagamentoDto) {
+    const { compraId, nomeUsuario } = dto;
+
+    const listOpt = new ListCompraOptionsDto({
+      ids: [compraId],
+      withPagamentos: { isInner: false },
+    });
+    const compra = await this.compraService.findOneCompra(listOpt);
+
+    if (!compra) {
+      throw new NotFoundException(
+        'Compra não encontrada para cadastrar pagamento',
+      );
+    }
+
+    const nomeUsuarioUnq = StringFunctionsClass.toLowerUnaccent(nomeUsuario);
+    const pagamentoFound = compra.pagamentos.find(
+      (p) => p.usuario.nomeUnique === nomeUsuarioUnq,
+    );
+
+    if (pagamentoFound) {
+      throw new BadRequestException(
+        `Já existe um pagamento para o usuário ${nomeUsuario} para a compra selecionada`,
+      );
+    }
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    const now = new Date();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const usuario = await this.usuarioService.getOrCreate(
+        nomeUsuario,
+        queryRunner.manager,
+      );
+
+      const pagamentoCreated = await this.pagamentoService.insert(
+        {
+          compraId: compra.id,
+          formaPagamento: dto.formaPagamento,
+          usuarioId: usuario.id,
+          valor: dto.valor,
+        },
+        queryRunner.manager,
+      );
+
+      await this.compraService.updateColumns(
+        compra.id,
+        { atualizadoEm: now },
+        queryRunner.manager,
+      );
+
+      await queryRunner.commitTransaction();
+
+      return pagamentoCreated;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new BadRequestException(error.message);

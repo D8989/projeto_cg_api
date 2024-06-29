@@ -16,7 +16,7 @@ export class UsuarioEntity {
   @Column('varchar', { length: 100 })
   nome: string;
 
-  @Column('varchar', { length: 100 })
+  @Column('varchar', { name: 'nome_unique', length: 100 })
   nomeUnique: string;
 
   constructor(partial: Partial<UsuarioEntity>) {

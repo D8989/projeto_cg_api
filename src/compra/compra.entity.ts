@@ -11,6 +11,7 @@ import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { LojaEntity } from 'src/loja/loja.entity';
 import { ItemCompraEntity } from 'src/item-compra/item-compra.entity';
+import { PagamentoEntity } from 'src/pagamento/pagamento.entity';
 
 @Entity('compra', { schema: process.env.SCHEMA })
 @ObjectType()
@@ -48,6 +49,9 @@ export class CompraEntity {
 
   @OneToMany(() => ItemCompraEntity, (item) => item.compra)
   itens: ItemCompraEntity[];
+
+  @OneToMany(() => PagamentoEntity, (pag) => pag.compra)
+  pagamentos: PagamentoEntity[];
 
   @Field({ description: 'Variável virtual', nullable: true })
   @ApiPropertyOptional({ type: Number, description: 'Variável virtual' })
