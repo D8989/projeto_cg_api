@@ -133,6 +133,7 @@ export class CompraService {
       ids: [id],
       withLoja: true,
       withItens: { isInner: false, withProduto: true },
+      withPagamentos: { isInner: false },
     });
     const compra = await this.compraRepo.findOne(listOpt.toIOptCompra());
     if (!compra) {
