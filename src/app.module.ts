@@ -7,8 +7,7 @@ import { AppResolver } from './app.resolver';
 import { ConfigModule } from './config/config.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from './config/config.service';
-import { ProdutoModule } from './produto/produto.module';
-import { LojaModule } from './loja/loja.module';
+import { ControlCompraModule } from './control-compra/control-compra.module';
 
 @Module({
   imports: [
@@ -36,8 +35,7 @@ import { LojaModule } from './loja/loja.module';
       inject: [ConfigService],
     }),
     ConfigModule,
-    ProdutoModule,
-    LojaModule,
+    ControlCompraModule,
   ],
   controllers: [AppController],
   providers: [AppService, AppResolver],

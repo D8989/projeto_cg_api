@@ -1,6 +1,7 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsIn,
   IsInt,
   IsNotEmpty,
@@ -34,15 +35,22 @@ export class CreateProdutoInput {
   @IsOptional()
   descricao?: string;
 
-  @Field(() => Int)
-  @ApiProperty({ type: Number })
+  @Field(() => Int, { nullable: true })
+  @ApiPropertyOptional({ type: Number, nullable: true })
   @IsInt()
   @Min(1)
-  quantidade: number;
+  @IsOptional()
+  quantidade?: number;
 
-  @Field(() => String)
-  @ApiProperty({ type: String })
+  @Field(() => String, { nullable: true })
+  @ApiPropertyOptional({ type: String, nullable: true })
   @IsString()
   @IsIn(['Kg', 'g', 'ml', 'l'])
-  gramatura: string;
+  @IsOptional()
+  gramatura?: string;
+
+  @Field(() => Boolean)
+  @ApiProperty({ type: Boolean })
+  @IsBoolean()
+  hasEmbalagem: boolean;
 }

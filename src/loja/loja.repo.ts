@@ -118,7 +118,7 @@ export class LojaRepo
     }
 
     if (joins.tipoLoja) {
-      opt.customSelect = { tl: ['id', 'nome', 'descricao'] };
+      opt.customSelect = { tl: { colums: ['id', 'nome', 'descricao'] } };
     }
   }
 

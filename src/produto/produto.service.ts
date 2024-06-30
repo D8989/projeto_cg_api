@@ -39,7 +39,7 @@ export class ProdutoService {
       }),
       this.itemBaseService.findOne(itemBaseId, {
         select: ['id', 'nome', 'descricao'],
-        customSelect: { tib: ['id', 'nome', 'descricao'] },
+        customSelect: { tib: { colums: ['id', 'nome', 'descricao'] } },
       }),
     ]);
 
@@ -103,10 +103,18 @@ export class ProdutoService {
       }
     }
 
+    if (
+      typeof updateDto.hasEmbalagem !== 'undefined' &&
+      updateDto.hasEmbalagem === false
+    ) {
+      updateDto.gramatura = undefined;
+      updateDto.quantidade = undefined;
+    }
+
     const checkUnique = await this.checkUnique(
       {
         nome: updateDto.nome || produto.nome,
-        quantidade: updateDto.quantidade || produto.quantidade,
+        quantidade: updateDto.quantidade,
         marcaId: updateDto.marcaId || produto.marcaId,
         itemBaseId: updateDto.itemBaseId || produto.itemBaseId,
       },
@@ -176,6 +184,10 @@ export class ProdutoService {
     await this.produtoRepo.saveOne(produto);
   }
 
+  async findOneProduto(listOpt: ListProdutoOptionsDto) {
+    return await this.produtoRepo.findOne(listOpt.toIFindProduto());
+  }
+
   private checkDto(dto: CreateProdutoInput | PutProdutoDto): RespBollClass {
     if (dto.quantidade && dto.quantidade <= 0) {
       return { flag: false, message: 'Quantidade deve ser maior que zero' };
@@ -184,6 +196,20 @@ export class ProdutoService {
       return {
         flag: false,
         message: `gramatura está com o valor inválido ${dto.gramatura}`,
+      };
+    }
+    if (dto.hasEmbalagem && (!dto.gramatura || !dto.quantidade)) {
+      return {
+        flag: false,
+        message:
+          'Se possui embalagem, então também deve informar a gramatura e a quantidade',
+      };
+    }
+    if (!dto.hasEmbalagem && (dto.gramatura || dto.quantidade)) {
+      return {
+        flag: false,
+        message:
+          'Se não possui embalagem, então não deve informar a gramatura e a quantidade',
       };
     }
 
@@ -200,7 +226,7 @@ export class ProdutoService {
       nomeUnique: StringFunctionsClass.toLowerUnaccent(uniqKeys.nome),
       marcaIds: [uniqKeys.marcaId],
       itemBaseIds: [uniqKeys.itemBaseId],
-      quantidades: [uniqKeys.quantidade],
+      quantidades: uniqKeys.quantidade ? [uniqKeys.quantidade] : [],
     });
 
     if (produto) {
