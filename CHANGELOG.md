@@ -1,3 +1,9 @@
+# [0.4.0] - 2024-06-30
+## Required
+- BD v0.4.0
+## Added
+- nava entidade Compra. Com as outras entidades item-compra, pagamento e usuario.
+
 # [0.3.0] - 2024-06-11
 ## Required
 - BD v0.3.0
