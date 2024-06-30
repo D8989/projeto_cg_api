@@ -69,4 +69,25 @@ export class ControlCompraController {
       throw error;
     }
   }
+
+  @Delete('compra/:compra_id/pagamento/:id')
+  @ApiOkResponse({ type: RespMessageClass })
+  async rmPagamentoCompra(
+    @Param('compra_id', ParseIntPipe) compraId: number,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    try {
+      await this.controlCompraService.rmPagamento({
+        compraId,
+        pagamentoId: id,
+      });
+
+      return new RespMessageClass({
+        id: compraId,
+        message: 'Pagamento removido com sucesso',
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
 }

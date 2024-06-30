@@ -19,6 +19,7 @@ import { CompraEntity } from 'src/compra/compra.entity';
 import { ArrayFunctions } from 'src/common/functions/array-functions.class';
 import { AddPagamentoDto } from './dto/add-pagamento.dto';
 import { StringFunctionsClass } from 'src/common/functions/string-functions.class';
+import { RmPagamentoDto } from './dto/rm-pagamento.dto';
 
 @Injectable()
 export class ControlCompraService {
@@ -254,6 +255,51 @@ export class ControlCompraService {
       await queryRunner.commitTransaction();
 
       return pagamentoCreated;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new BadRequestException(error.message);
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async rmPagamento(dto: RmPagamentoDto) {
+    const { compraId, pagamentoId } = dto;
+
+    const listCompraOpt = new ListCompraOptionsDto({
+      ids: [compraId],
+      withPagamentos: {
+        isInner: false,
+      },
+    });
+    const compra = await this.compraService.findOneCompra(listCompraOpt);
+    if (!compra) {
+      throw new NotFoundException(
+        'Compra não encontrada para a remoção do pagamento',
+      );
+    }
+
+    const pagFound = compra.pagamentos.find((p) => p.id === pagamentoId);
+    if (!pagFound) {
+      throw new NotFoundException('Pagamento não encontrado para a remoção');
+    }
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    const now = new Date();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      await this.pagamentoService.remove(pagFound, queryRunner.manager);
+      await this.compraService.updateColumns(
+        compra.id,
+        { atualizadoEm: now },
+        queryRunner.manager,
+      );
+
+      await queryRunner.commitTransaction();
+      return compra;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new BadRequestException(error.message);

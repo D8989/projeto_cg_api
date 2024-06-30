@@ -4,6 +4,7 @@ import { RespMessageClass } from 'src/common/classes/resp-message.class';
 import { AddItemCompraDto } from './dto/add-item-compra.dto';
 import { BadRequestException } from '@nestjs/common';
 import { AddPagamentoDto } from './dto/add-pagamento.dto';
+import { RmPagamentoDto } from './dto/rm-pagamento.dto';
 
 @Resolver()
 export class ControlCompraResolver {
@@ -36,6 +37,17 @@ export class ControlCompraResolver {
         id: dto.compraId,
         message: 'Pagamento usuário inserido com sucesso',
       });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Mutation(() => RespMessageClass, { name: 'rmPagamentoUsuario' })
+  async rmPagamento(
+    @Args({ name: 'dto', type: () => RmPagamentoDto }) dto: RmPagamentoDto,
+  ) {
+    try {
+      await this.service.rmPagamento(dto);
     } catch (error) {
       throw error;
     }

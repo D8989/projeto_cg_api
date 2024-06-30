@@ -23,4 +23,8 @@ export class PagamentoService {
 
     return await this.pagamentoRepo.save(pagamento, ent);
   }
+
+  async remove(pagamento: PagamentoEntity, ent: EntityManager) {
+    await this.pagamentoRepo.hardDelete(pagamento, ent);
+  }
 }

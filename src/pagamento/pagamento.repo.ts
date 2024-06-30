@@ -47,6 +47,11 @@ export class PagamentoRepo
     return await entRepo.save(pag);
   }
 
+  async hardDelete(pag: PagamentoEntity, ent?: EntityManager) {
+    const entRepo = ent?.getRepository(PagamentoEntity) || this.repo;
+    return await entRepo.delete({ id: pag.id });
+  }
+
   protected override buildSpecificJoin(
     qb: SelectQueryBuilder<PagamentoEntity>,
     alias?: string | undefined,
