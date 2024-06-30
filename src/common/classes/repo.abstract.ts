@@ -20,7 +20,12 @@ export abstract class ARepo<T extends LiteralObject, U extends IFindOpt> {
       for (const key of keys) {
         const alias = this.alias.find((al) => al === key);
         if (alias && !RepoFunctions.hasAlias(qb, alias)) {
-          this.buildSpecificJoin(qb, alias);
+          this.buildSpecificJoin(
+            qb,
+            alias,
+            customSelect[key].isInner,
+            customSelect[key].joinInfo,
+          );
         }
       }
     }
@@ -62,6 +67,7 @@ export abstract class ARepo<T extends LiteralObject, U extends IFindOpt> {
     qb: SelectQueryBuilder<T>,
     alias?: string,
     isInner?: boolean,
+    objJoin?: MyObjJoin,
   ): boolean;
   protected abstract buildOrder(qb: SelectQueryBuilder<T>, opt: U): void;
   protected abstract buildWhere(qb: SelectQueryBuilder<T>, opt: U): void;

@@ -1,6 +1,7 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsIn,
   IsInt,
   IsNotEmpty,
@@ -50,4 +51,10 @@ export class PutProdutoDto {
   @IsIn(['Kg', 'g', 'ml', 'l'])
   @IsOptional()
   gramatura?: string;
+
+  @Field(() => Boolean, { nullable: true })
+  @ApiPropertyOptional({ type: Boolean })
+  @IsBoolean()
+  @IsOptional()
+  hasEmbalagem?: boolean;
 }

@@ -18,14 +18,22 @@ import { PutLojaDto } from './dto/put-loja.dto';
 import { ObjectFunctions } from 'src/common/functions/object-functions.class';
 import { ViewLojaDto } from './dto/view-loja.dto';
 import { TipoLojaEntity } from 'src/tipo-loja/tipo-loja.entity';
+import { IOptLoja } from './interfaces/loja-options.interface';
+import { TypeLoader } from 'src/common/types/loader.type';
+import { LoaderFactory } from 'src/common/functions/loader-factory.class';
 
 @Injectable()
 export class LojaService {
+  private loader: TypeLoader<LojaEntity>;
   constructor(
     private lojaRepo: LojaRepo,
     private tipoLojaService: TipoLojaService,
     private enderecoService: EnderecoService,
-  ) {}
+  ) {
+    this.loader = LoaderFactory.createLoader((ids: number[]) =>
+      this.findByIds(ids),
+    );
+  }
 
   async findPaginado(opt: ListLojaOptionsDto) {
     if (!opt.limite) {
@@ -69,8 +77,11 @@ export class LojaService {
     return this.lojaRepo.findAll({ ids: ids });
   }
 
-  async findById(id: number) {
-    return await this.lojaRepo.findOne({ ids: [id] });
+  async findById(id: number, opt?: IOptLoja) {
+    return await this.lojaRepo.findOne({
+      ...opt,
+      ids: [id],
+    });
   }
 
   async create(dto: CreateLojaInput, ent?: EntityManager) {
@@ -151,7 +162,10 @@ export class LojaService {
       tipoLoja: tipoLoja,
     });
 
-    return await this.lojaRepo.save(lojaUpdated);
+    return await this.lojaRepo.save(lojaUpdated).then((resp) => {
+      this.clearLoaders([resp.id]);
+      return resp;
+    });
   }
 
   async softDelte(id: number, ent?: EntityManager) {
@@ -163,7 +177,14 @@ export class LojaService {
       throw new NotFoundException('Loja não encontrada para desativação');
     }
     loja.desativadoEm = new Date();
-    return await this.lojaRepo.save(loja);
+    return await this.lojaRepo.save(loja).then((resp) => {
+      this.clearLoaders([resp.id]);
+      return resp;
+    });
+  }
+
+  async findByLoader(id: number) {
+    return await this.loader.load(id);
   }
 
   async checkDuplicada(
@@ -269,5 +290,11 @@ export class LojaService {
       }),
       enderecoDto: this.getEnderecoSimple(loja),
     });
+  }
+
+  private clearLoaders(ids: number[]) {
+    for (const id of ids) {
+      this.loader.clear(id);
+    }
   }
 }

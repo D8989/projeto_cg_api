@@ -1,3 +1,7 @@
 type MyObject = {
-  [key: string]: string[];
+  [key: string]: {
+    colums: string[];
+    isInner?: boolean;
+    joinInfo?: MyObjJoin;
+  };
 };

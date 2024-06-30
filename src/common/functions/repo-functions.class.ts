@@ -53,7 +53,7 @@ export class RepoFunctions {
     return validAliases.reduce((columns, alias) => {
       return [
         ...columns,
-        ...customSelect[alias].map((col) => `${alias}.${col}`),
+        ...customSelect[alias].colums.map((col) => `${alias}.${col}`),
       ];
     }, []);
   }
