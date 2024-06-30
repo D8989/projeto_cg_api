@@ -1,6 +1,5 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
 import {
   IsEnum,
   IsInt,
@@ -10,7 +9,6 @@ import {
   IsString,
 } from 'class-validator';
 import { FormaPagamentoEnum } from 'src/common/enum/forma-pagamento.enum';
-import { StringFunctionsClass } from 'src/common/functions/string-functions.class';
 
 @InputType()
 export class AddPagamentoDto {
@@ -34,14 +32,10 @@ export class AddPagamentoDto {
   @IsNotEmpty()
   nomeUsuario: string;
 
-  @Field(() => String, {
+  @Field(() => Number, {
     description: 'Máximo de 2 casas decimais separado por ponto',
   })
-  @ApiProperty({ type: String })
-  @Transform(({ obj, value }) => {
-    obj.precoUnidade = StringFunctionsClass.stringToNumberDecimal(value, 2);
-    return StringFunctionsClass.stringToNumberDecimal(value, 2);
-  })
+  @ApiProperty({ type: Number })
   @IsNumber(
     { maxDecimalPlaces: 2 },
     { message: 'formato do preço médio inválido' },
