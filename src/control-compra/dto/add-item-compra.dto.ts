@@ -29,7 +29,7 @@ export class AddItemCompraDto {
   @Field(() => Number, {
     description: 'Máximo de 2 casas decimais separado por ponto',
   })
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: Number })
   @IsNumber(
     { maxDecimalPlaces: 2 },
     { message: 'formato do preço médio inválido' },
