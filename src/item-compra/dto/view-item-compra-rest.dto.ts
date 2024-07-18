@@ -15,4 +15,7 @@ export class ViewItemCompraRest {
 
   @ApiProperty({ type: String })
   gramatura: string;
+
+  @ApiProperty({ type: Number })
+  valorTotal: number;
 }

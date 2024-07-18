@@ -31,6 +31,7 @@ export class ViewCompraRest extends ViewListCompraDto {
       gramatura: i.gramatura,
       produtoNome: i.produto.nome,
       quantidade: i.quantidade,
+      valorTotal: NumberFunctions.round(i.quantidade * i.custo),
     }));
 
     this.pagamentos = compraEntity.pagamentos.map((p) => ({
