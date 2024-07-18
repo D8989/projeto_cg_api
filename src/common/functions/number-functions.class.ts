@@ -19,4 +19,15 @@ export class NumberFunctions {
       },
     };
   }
+
+  static numericOptionalTransform(): ValueTransformer {
+    return {
+      from(value?: string) {
+        return value ? parseFloat(value) : null;
+      },
+      to(value?: number) {
+        return value?.toString();
+      },
+    };
+  }
 }

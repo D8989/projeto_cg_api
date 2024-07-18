@@ -10,6 +10,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import 'dotenv/config';
+import { NumberFunctions } from 'src/common/functions/number-functions.class';
 
 @Entity('produto', { schema: process.env.SCHEMA })
 @ObjectType()
@@ -42,9 +43,12 @@ export class ProdutoEntity {
   @Column()
   descricao: string;
 
-  @Field(() => Int, { nullable: true })
+  @Field(() => Number, { nullable: true })
   @ApiPropertyOptional({ type: Number, nullable: true })
-  @Column({ nullable: true })
+  @Column('numeric', {
+    transformer: NumberFunctions.numericOptionalTransform(),
+    nullable: true,
+  })
   quantidade?: number;
 
   @Field(() => String, { nullable: true })
