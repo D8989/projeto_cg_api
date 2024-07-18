@@ -48,7 +48,7 @@ export class PutProdutoDto {
   @Field(() => String, { nullable: true })
   @ApiPropertyOptional({ type: String })
   @IsString()
-  @IsIn(['Kg', 'g', 'ml', 'l'])
+  @IsIn(['Kg', 'g', 'ml', 'l', 'unid'])
   @IsOptional()
   gramatura?: string;
 

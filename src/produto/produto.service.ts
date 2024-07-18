@@ -192,7 +192,10 @@ export class ProdutoService {
     if (dto.quantidade && dto.quantidade <= 0) {
       return { flag: false, message: 'Quantidade deve ser maior que zero' };
     }
-    if (dto.gramatura && !['Kg', 'g', 'ml', 'l'].includes(dto.gramatura)) {
+    if (
+      dto.gramatura &&
+      !['Kg', 'g', 'ml', 'l', 'unid'].includes(dto.gramatura)
+    ) {
       return {
         flag: false,
         message: `gramatura está com o valor inválido ${dto.gramatura}`,

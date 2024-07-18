@@ -45,7 +45,7 @@ export class CreateProdutoInput {
   @Field(() => String, { nullable: true })
   @ApiPropertyOptional({ type: String, nullable: true })
   @IsString()
-  @IsIn(['Kg', 'g', 'ml', 'l'])
+  @IsIn(['Kg', 'g', 'ml', 'l', 'unid'])
   @IsOptional()
   gramatura?: string;
 
